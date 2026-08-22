@@ -44,6 +44,16 @@
         var accessToken = fragment.get('access_token');
         var errorParam = fragment.get('error') || new URLSearchParams(window.location.search).get('error');
 
+        // 문의(챗) 위젯은 팝업 창으로 로그인을 띄웁니다. 그 경우 원래 창(opener)에
+        // 토큰을 바로 전달하고 이 팝업은 닫습니다.
+        if (window.opener) {
+            if (accessToken && typeof window.opener.handleLoginSuccess === 'function') {
+                window.opener.handleLoginSuccess(accessToken);
+            }
+            window.close();
+            return;
+        }
+
         var redirectTarget = sessionStorage.getItem('post_login_redirect') || '/';
         sessionStorage.removeItem('post_login_redirect');
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rocord - 모델</title>
+    <title>Rocord - 모델 상세</title>
     <meta name="theme-color" content="#5865F2">
     <style>
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
@@ -15,10 +15,9 @@
         a { text-decoration: none; color: inherit; }
         button { border: none; background: none; cursor: pointer; }
 
-        /* 헤더 스타일 */
         header { position: fixed; top: 0; width: 100%; height: 60px; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; backdrop-filter: blur(15px); background: rgba(255, 255, 255, 0.85); border-bottom: 1px solid rgba(0,0,0,0.05); }
         .logo-container svg { height: 24px; width: auto; display: block; cursor: pointer; }
-        
+
         .header-right { display: flex; align-items: center; gap: 20px; }
         .nav-links { display: flex; gap: 20px; }
         .nav-links a { font-size: 0.95rem; font-weight: 500; transition: color 0.3s; }
@@ -56,7 +55,6 @@
         .logout-btn { width: 100%; padding: 8px; background: #ff4757; color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-align: center; }
         .logout-btn:hover { background: #e84118; }
 
-        /* 모달 스타일 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.show { opacity: 1; }
         .login-modal { background: #fff; width: 340px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
@@ -81,108 +79,40 @@
         .auto-login-wrapper input[type="checkbox"]:checked + .checkbox-icon { background: #5865F2; border-color: #5865F2; }
         .auto-login-wrapper input[type="checkbox"]:checked + .checkbox-icon svg { display: block; }
 
-        /* 컨텐츠 영역 */
-        .content-container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; min-height: 80vh; }
-        
-        /* 페이지 헤더 */
-        .page-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 40px; flex-wrap: wrap; gap: 20px;
-        }
-        .page-title { font-size: 2rem; font-weight: 800; color: #1a1a1a; margin-left: 15px; }
-        
-        /* 검색 및 정렬 컨트롤 그룹 */
-        .controls-wrapper { display: flex; gap: 10px; align-items: center; width: 100%; max-width: 450px; justify-content: flex-end; }
+        .content-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; min-height: 80vh; }
+        .breadcrumb { font-size: 0.85rem; color: #888; margin-bottom: 20px; }
+        .breadcrumb a:hover { color: #5865F2; }
 
-        /* 정렬 드롭다운 */
-        .sort-select {
-            padding: 12px 15px; border-radius: 50px;
-            border: 2px solid #eee; background: #f9f9f9;
-            font-size: 0.9rem; outline: none; font-weight: 700; color: #555; cursor: pointer; transition: 0.3s;
-            appearance: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 15px center; background-size: 15px;
-            padding-right: 40px; min-width: 120px;
-        }
-        .sort-select:focus { border-color: #5865F2; background-color: #fff; }
+        .detail-hero-img { width: 100%; max-height: 480px; object-fit: cover; border-radius: 24px; background: #f0f0f0; margin-bottom: 24px; }
+        .detail-title { font-size: 2rem; font-weight: 800; margin-bottom: 10px; }
+        .detail-meta { font-size: 0.85rem; color: #999; margin-bottom: 24px; }
+        .detail-content { font-size: 1rem; color: #333; white-space: pre-wrap; line-height: 1.8; margin-bottom: 36px; }
 
-        /* 검색창 스타일 */
-        .search-box { position: relative; width: 100%; flex-grow: 1; }
-        .search-box input {
-            width: 100%; padding: 12px 20px; border-radius: 50px;
-            border: 2px solid #eee; background: #f9f9f9;
-            font-size: 0.95rem; outline: none; transition: 0.3s;
-        }
-        .search-box input:focus { border-color: #5865F2; background: #fff; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.1); }
+        .detail-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+        .btn-download-lg { padding: 14px 32px; background: #1a1a1a; color: #fff; border-radius: 50px; font-weight: 700; font-size: 1rem; transition: 0.2s; }
+        .btn-download-lg:hover { background: #333; }
+        .btn-download-lg:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-discord-link { padding: 14px 32px; background: #5865F2; color: #fff; border-radius: 50px; font-weight: 700; font-size: 1rem; transition: 0.2s; display: inline-flex; align-items: center; }
+        .btn-discord-link:hover { background: #4752c4; }
 
-        /* 모델 그리드 */
-        .model-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; }
-        
-        /* 카드 스타일 */
-        .model-card {
-            background: #fff; border: 1px solid #eee; 
-            border-radius: 24px; padding: 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
-            transition: 0.3s; height: 100%; display: flex; flex-direction: column;
-        }
-        .model-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
-        .model-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 16px; margin-bottom: 15px; background: #f0f0f0; }
-        .model-info h3 { font-size: 1.2rem; margin-bottom: 8px; font-weight: 700; }
-        .model-info p { font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5; flex-grow: 1; }
-        
-        /* [수정] 상세페이지 버튼 스타일 추가 */
-        .btn-detail {
-            width: 100%; padding: 12px; background: #fff; color: #1a1a1a;
-            border: 2px solid #eee; margin-bottom: 8px;
-            border-radius: 12px; font-weight: 700; text-align: center; transition: 0.2s;
-            margin-top: auto; /* 상단 내용과 거리 벌리기 */
-        }
-        .btn-detail:hover:not(:disabled) { border-color: #1a1a1a; background: #f9f9f9; }
-        .btn-detail:disabled {
-            background: #f5f5f5; color: #bbb; border-color: #eee; cursor: not-allowed; opacity: 0.7;
-        }
+        .state-message { text-align: center; padding: 80px 20px; color: #888; }
 
-        .btn-download { 
-            width: 100%; padding: 12px; background: #1a1a1a; color: #fff; 
-            border-radius: 12px; font-weight: 700; text-align: center; transition: 0.2s; 
-            /* margin-top 제거 (상세버튼이 밀어줌) */
-        }
-        .btn-download:hover { background: #333; }
-
-        .spinner-container { grid-column: 1 / -1; display: flex; justify-content: center; padding: 50px 0; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #5865F2; border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #5865F2; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         .btn-loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        footer { padding: 40px; font-size: 0.75rem; color: #666; text-align: center; background: #f9f9f9; border-top: 1px solid #eee; margin-top: 60px; }
-
-        /* 로딩 오버레이 (최상단 배치) */
-        .redirect-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 1);
-            z-index: 9999;
-            display: none; justify-content: center; align-items: center; flex-direction: column;
-        }
+        .redirect-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 1); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
         .redirect-overlay.active { display: flex; }
-        .loading-spinner-large {
-            width: 50px; height: 50px; border: 5px solid #f3f3f3;
-            border-top: 5px solid #5865F2; border-radius: 50%;
-            animation: spin 1s linear infinite; margin-bottom: 20px;
-        }
+        .loading-spinner-large { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #5865F2; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
 
-        @media (max-width: 1200px) { .model-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 900px) { .model-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) {
             header { height: 55px; padding: 0 20px; }
             .nav-links { display: none; }
             .logo-container svg { height: 20px; }
             .hamburger-btn { display: block; }
-            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .controls-wrapper { max-width: 100%; }
-            .page-title { margin-left: 0; }
-            .model-grid { grid-template-columns: repeat(1, 1fr); }
             .user-dropdown { right: 20px; width: 240px; }
             .mobile-menu { top: 55px; border-radius: 0 0 20px 20px; }
+            .detail-title { font-size: 1.5rem; }
         }
     #my-chat-widget-wrapper { font-family: sans-serif; }
 #chat-button { position: fixed; bottom: 20px; right: 20px; z-index: 10001; width: 55px; height: 55px; background: white; border-radius: 20px; box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.2); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.1s ease-in-out, background-color 0.2s, box-shadow 0.2s; overflow: hidden; }
@@ -295,22 +225,11 @@
 </div>
 
 <div class="content-container">
-    <div class="page-header">
-        <h1 class="page-title">모든모델 All Model</h1>
-        <div class="controls-wrapper">
-            <select id="sortOrder" class="sort-select" onchange="applyFilters()">
-                <option value="newest">최신순</option>
-                <option value="oldest">오래된순</option>
-            </select>
-            <div class="search-box">
-                <input type="text" id="search" placeholder="모델 검색..." oninput="applyFilters()">
-            </div>
-        </div>
-    </div>
-
-    <div class="model-grid" id="modelGrid">
-        <div class="spinner-container">
+    <p class="breadcrumb"><a href="model.html">← 모델 목록으로</a></p>
+    <div id="detailBody">
+        <div class="state-message">
             <div class="spinner"></div>
+            불러오는 중...
         </div>
     </div>
 </div>
@@ -357,43 +276,34 @@
     </div>
 </div>
 
-
 <script>
     const CLIENT_ID = '1460856182716502036';
     const BACKEND_URL = 'https://rocorddev.pythonanywhere.com';
 
     let isLoggedIn = false;
     let currentUserToken = null;
-    let allModelsData = []; 
+    let currentModel = null;
 
-    // 즉시 실행 함수: URL이나 저장소에서 토큰 확인 및 자동 로그인
     (function checkLoginImmediately() {
         const urlHash = window.location.hash.substring(1);
         const urlParams = new URLSearchParams(urlHash);
         const accessTokenInUrl = urlParams.get('access_token');
         const storedToken = localStorage.getItem('discord_token');
-        
-        // 1. 디스코드에서 돌아왔을 때 (URL에 토큰이 있음)
+
         if (accessTokenInUrl) {
-            document.getElementById('redirectOverlay').classList.add('active'); // 로딩 즉시 켜기
-            localStorage.setItem('discord_token', accessTokenInUrl); // 저장
-            
-            // URL 깨끗하게 정리 (사용자에게 토큰 안보이게)
-            history.replaceState(null, null, window.location.pathname);
-            
-            // 즉시 백엔드 확인 시작
+            document.getElementById('redirectOverlay').classList.add('active');
+            localStorage.setItem('discord_token', accessTokenInUrl);
+            history.replaceState(null, null, window.location.pathname + window.location.search);
             loginToBackend(accessTokenInUrl);
-        }
-        // 2. 이미 로그인되어 있을 때
-        else if (storedToken) {
-            document.getElementById('redirectOverlay').classList.add('active'); // 로딩 즉시 켜기
+        } else if (storedToken) {
+            document.getElementById('redirectOverlay').classList.add('active');
             loginToBackend(storedToken);
         }
     })();
 
     window.onload = function() {
-        fetchModels();
-        
+        loadModel();
+
         document.getElementById('loginModalOverlay').addEventListener('click', function(e) {
             if (e.target === this) closeLoginModal();
         });
@@ -403,7 +313,7 @@
             const headerBtn = document.getElementById('headerLoginBtn');
             const hamburger = document.querySelector('.hamburger-btn');
             const mobileMenu = document.getElementById('mobileMenu');
-            
+
             if (!dropdown.contains(e.target) && !headerBtn.contains(e.target)) {
                 dropdown.classList.remove('active');
             }
@@ -437,7 +347,7 @@
         })
         .catch(err => {
             console.error(err);
-            localStorage.removeItem('discord_token'); 
+            localStorage.removeItem('discord_token');
         })
         .finally(() => {
             document.getElementById('redirectOverlay').classList.remove('active');
@@ -456,11 +366,11 @@
             avatarUrl = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png`;
         }
         avatar.src = avatarUrl;
-        
-        btn.style.background = "transparent"; 
+
+        btn.style.background = "transparent";
         btn.style.color = "#1a1a1a";
         btn.style.border = "1px solid #ddd";
-        
+
         document.getElementById('dropdownAvatar').src = avatarUrl;
         document.getElementById('dropdownName').innerText = data.global_name || data.username;
         document.getElementById('dropdownId').innerText = '@' + data.username;
@@ -505,7 +415,7 @@
     }
 
     function loginWithDiscord() {
-        sessionStorage.setItem('post_login_redirect', window.location.pathname);
+        sessionStorage.setItem('post_login_redirect', window.location.pathname + window.location.search);
         const currentRedirectUri = window.location.origin + '/auth.html';
 
         const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(currentRedirectUri)}&response_type=token&scope=identify`;
@@ -519,123 +429,74 @@
         location.reload();
     }
 
-    function fetchModels() {
-        fetch('/models/models.json')
-        .then(res => res.json())
-        .then(data => {
-            allModelsData = data;
-            applyFilters();
-        })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('modelGrid').innerHTML = '<div style="text-align:center;width:100%">데이터를 불러오는데 실패했습니다.</div>';
-        });
-    }
+    function loadModel() {
+        const id = new URLSearchParams(window.location.search).get('id');
+        const body = document.getElementById('detailBody');
 
-    function applyFilters() {
-        const query = document.getElementById('search').value.toLowerCase();
-        const sortOrder = document.getElementById('sortOrder').value;
-
-        let filtered = allModelsData.filter(model => 
-            model.name.toLowerCase().includes(query) || 
-            model.desc.toLowerCase().includes(query)
-        );
-
-        if(sortOrder === 'newest') {
-            filtered.reverse(); 
-        }
-
-        renderModels(filtered);
-    }
-
-    function renderModels(models) {
-        const grid = document.getElementById('modelGrid');
-        grid.innerHTML = ''; 
-
-        if (models.length === 0) {
-            grid.innerHTML = '<div style="text-align:center; width:100%; grid-column: 1 / -1;">모델이 없습니다.</div>';
+        if (!id) {
+            body.innerHTML = '<div class="state-message">모델 ID가 없습니다.</div>';
             return;
         }
 
-        models.forEach(model => {
-            const card = document.createElement('div');
-            card.className = 'model-card';
-
-            // [수정] 상세페이지 버튼 생성 로직
-            let detailBtnHtml = '';
-            // detail_url이 존재하고 비어있지 않은지 확인
-            if (model.detail_url && model.detail_url.trim() !== "") {
-                detailBtnHtml = `<button class="btn-detail" onclick="window.location.href='${model.detail_url}'">상세페이지</button>`;
-            } else {
-                // 비활성화 버튼
-                detailBtnHtml = `<button class="btn-detail" disabled>세부페이지가 없습니다</button>`;
+        fetch('/models/models.json')
+        .then(res => res.json())
+        .then(data => {
+            const model = data.find(m => m.id === id);
+            if (!model) {
+                body.innerHTML = '<div class="state-message">해당 모델을 찾을 수 없습니다.</div>';
+                return;
             }
-
-            card.innerHTML = `
-                <img src="${model.image}" alt="${model.name}" class="model-img">
-                <div class="model-info">
-                    <h3>${model.name}</h3>
-                    <p>${model.desc}</p>
-                </div>
-                ${detailBtnHtml}
-                <button class="btn-download" onclick="downloadModel(this, '${model.id}')">다운로드</button>
-            `;
-            grid.appendChild(card);
+            currentModel = model;
+            document.title = `Rocord - ${model.name}`;
+            renderModel(model);
+        })
+        .catch(err => {
+            console.error(err);
+            body.innerHTML = '<div class="state-message">데이터를 불러오는데 실패했습니다.</div>';
         });
     }
 
-    function downloadModel(btnElement, targetId) {
+    function renderModel(model) {
+        const body = document.getElementById('detailBody');
+        const imgHtml = model.image ? `<img src="${model.image}" alt="${model.name}" class="detail-hero-img">` : '';
+        const contentHtml = model.content ? escapeHtml(model.content) : '설명이 없습니다.';
+        const updated = model.updated_at ? new Date(model.updated_at).toLocaleDateString('ko-KR') : '';
+
+        body.innerHTML = `
+            ${imgHtml}
+            <h1 class="detail-title">${model.name}</h1>
+            <p class="detail-meta">${updated ? '업데이트: ' + updated : ''}</p>
+            <div class="detail-content">${contentHtml}</div>
+            <div class="detail-actions">
+                <button class="btn-download-lg" id="downloadBtn" onclick="downloadCurrentModel(this)" ${model.download_url ? '' : 'disabled'}>
+                    ${model.download_url ? '다운로드' : '다운로드 파일 없음'}
+                </button>
+                <a class="btn-discord-link" href="${model.discord_url}" target="_blank" rel="noopener noreferrer">디스코드에서 보기</a>
+            </div>
+        `;
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.innerText = str;
+        return div.innerHTML;
+    }
+
+    function downloadCurrentModel(btnElement) {
         if (!isLoggedIn) {
             alert("🔒 로그인이 필요한 서비스입니다.");
             openLoginModal();
             return;
         }
-
-        // 디스코드 포럼과 연동된 모델은 백엔드 없이 정적 다운로드 링크로 바로 이동합니다.
-        const model = allModelsData.find(m => m.id === targetId);
-        if (model) {
-            if (!model.download_url) {
-                alert("다운로드 파일이 없습니다.");
-                return;
-            }
-            window.location.href = model.download_url;
-            let countSpan = document.getElementById('downloadCount');
-            if(countSpan) countSpan.innerText = parseInt(countSpan.innerText) + 1;
+        if (!currentModel || !currentModel.download_url) {
+            alert("다운로드 파일이 없습니다.");
             return;
         }
-
-        const originalText = btnElement.innerHTML;
-        btnElement.innerHTML = '<span class="btn-loading-spinner"></span>';
-        btnElement.disabled = true;
-
-        fetch(`${BACKEND_URL}/api/request_download`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentUserToken}` 
-            },
-            body: JSON.stringify({ target_id: targetId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.url) {
-                window.location.href = data.url;
-                let countSpan = document.getElementById('downloadCount');
-                if(countSpan) countSpan.innerText = parseInt(countSpan.innerText) + 1;
-            } else {
-                alert("링크를 찾을 수 없습니다.");
-            }
-        })
-        .catch(err => {
-            alert("오류가 발생했습니다.");
-        })
-        .finally(() => {
-            setTimeout(() => {
-                btnElement.innerHTML = originalText;
-                btnElement.disabled = false;
-            }, 2000);
-        });
+        window.location.href = currentModel.download_url;
+        let countSpan = document.getElementById('downloadCount');
+        if(countSpan) countSpan.innerText = parseInt(countSpan.innerText) + 1;
     }
+
     function toggleChat() {
         const chatWindow = document.getElementById('chat-window');
         const chatBtn = document.getElementById('chat-button');
