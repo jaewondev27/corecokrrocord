@@ -273,8 +273,8 @@
     <div class="dropdown-stats">
         내가 다운로드한 모델: <span id="downloadCount">0</span>개
     </div>
-    <button class="cart-btn" onclick="alert('장바구니 기능은 추후 업데이트 예정입니다.')">🛒 장바구니</button>
-    <button class="logout-btn" onclick="logout()">로그아웃</button>
+    <button class="cart-btn" onclick="alert('장바구니 기능은 추후 업데이트 예정입니다.')"><i data-lucide="shopping-cart" class="lucide-fill"></i>장바구니</button>
+    <button class="logout-btn" onclick="logout()"><i data-lucide="log-out" class="lucide-fill"></i>로그아웃</button>
 </div>
 
 <div class="modal-overlay" id="loginModalOverlay">
@@ -402,6 +402,7 @@
     })();
 
     window.onload = function() {
+        if (window.lucide) window.lucide.createIcons();
         fetchModels();
         
         document.getElementById('loginModalOverlay').addEventListener('click', function(e) {

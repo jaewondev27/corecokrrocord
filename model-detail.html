@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocord - 모델 상세</title>
     <meta name="theme-color" content="#5865F2">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil5Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
@@ -94,6 +95,7 @@
         .btn-download-lg:disabled { background: #ccc; cursor: not-allowed; }
         .btn-discord-link { padding: 14px 32px; background: #5865F2; color: #fff; border-radius: 50px; font-weight: 700; font-size: 1rem; transition: 0.2s; display: inline-flex; align-items: center; }
         .btn-discord-link:hover { background: #4752c4; }
+        .lucide-fill { width: 16px; height: 16px; fill: currentColor; vertical-align: -3px; margin-right: 6px; }
 
         .state-message { text-align: center; padding: 80px 20px; color: #888; }
 
@@ -192,8 +194,8 @@
     <div class="dropdown-stats">
         내가 다운로드한 모델: <span id="downloadCount">0</span>개
     </div>
-    <button class="cart-btn" onclick="alert('장바구니 기능은 추후 업데이트 예정입니다.')">🛒 장바구니</button>
-    <button class="logout-btn" onclick="logout()">로그아웃</button>
+    <button class="cart-btn" onclick="alert('장바구니 기능은 추후 업데이트 예정입니다.')"><i data-lucide="shopping-cart" class="lucide-fill"></i>장바구니</button>
+    <button class="logout-btn" onclick="logout()"><i data-lucide="log-out" class="lucide-fill"></i>로그아웃</button>
 </div>
 
 <div class="modal-overlay" id="loginModalOverlay">
@@ -302,6 +304,7 @@
     })();
 
     window.onload = function() {
+        if (window.lucide) window.lucide.createIcons();
         loadModel();
 
         document.getElementById('loginModalOverlay').addEventListener('click', function(e) {
@@ -469,11 +472,12 @@
             <div class="detail-content">${contentHtml}</div>
             <div class="detail-actions">
                 <button class="btn-download-lg" id="downloadBtn" onclick="downloadCurrentModel(this)" ${model.download_url ? '' : 'disabled'}>
-                    ${model.download_url ? '다운로드' : '다운로드 파일 없음'}
+                    <i data-lucide="download" class="lucide-fill"></i>${model.download_url ? '다운로드' : '다운로드 파일 없음'}
                 </button>
-                <a class="btn-discord-link" href="${model.discord_url}" target="_blank" rel="noopener noreferrer">디스코드에서 보기</a>
+                <a class="btn-discord-link" href="${model.discord_url}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="lucide-fill"></i>디스코드에서 보기</a>
             </div>
         `;
+        if (window.lucide) window.lucide.createIcons();
     }
 
     function escapeHtml(str) {
