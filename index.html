@@ -1175,7 +1175,7 @@
 
     function initLatestModels() {
         const container = document.getElementById('latestModelContainer');
-        fetch('/models/models.json')
+        fetch('https://jaewondev27.github.io/rocord-models/models.json')
         .then(res => res.json())
         .then(data => {
             allModelsCache = data;
