@@ -6,6 +6,8 @@
     <title>Rocord - 모델 상세</title>
     <meta name="theme-color" content="#5865F2">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
     <style>
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil5Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
@@ -75,9 +77,17 @@
         .cart-item-download, .cart-item-remove { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; transition: 0.2s; color: #333; }
         .cart-item-download:hover { background: #e5e9ff; color: #5865F2; }
         .cart-item-remove:hover { background: #ffe5e5; color: #ff4757; }
+        .cart-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 6px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+        .cart-select-all { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #555; font-weight: 600; cursor: pointer; }
+        .cart-zip-btn { display: flex; align-items: center; padding: 8px 14px; background: #1a1a1a; color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.8rem; transition: 0.2s; }
+        .cart-zip-btn:hover:not(:disabled) { background: #333; }
+        .cart-zip-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .cart-item-check { width: 18px; height: 18px; accent-color: #5865F2; flex-shrink: 0; cursor: pointer; }
+        .cart-item-nofile { display: block; font-size: 0.75rem; color: #bbb; margin-top: 2px; }
         .cart-add-btn { width: 40px; height: 40px; border-radius: 12px; background: #fff; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; color: #555; }
         .cart-add-btn:hover { border-color: #5865F2; color: #5865F2; }
-        .cart-add-btn.in-cart { background: #5865F2; border-color: #5865F2; color: #fff; }
+        .cart-add-btn.in-cart { background: #fff; border-color: #5865F2; color: #5865F2; }
+        .cart-add-btn .lucide-fill { margin-right: 0; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.show { opacity: 1; }
@@ -110,7 +120,19 @@
         .detail-hero-img { width: 100%; max-height: 480px; object-fit: cover; border-radius: 24px; background: #f0f0f0; margin-bottom: 24px; }
         .detail-title { font-size: 2rem; font-weight: 800; margin-bottom: 10px; }
         .detail-meta { font-size: 0.85rem; color: #999; margin-bottom: 24px; }
-        .detail-content { font-size: 1rem; color: #333; white-space: pre-wrap; line-height: 1.8; margin-bottom: 36px; }
+        .detail-content { font-size: 1rem; color: #333; line-height: 1.8; margin-bottom: 36px; word-break: break-word; }
+        .detail-content p { margin: 0 0 1em; }
+        .detail-content p:last-child { margin-bottom: 0; }
+        .detail-content strong { font-weight: 800; color: #1a1a1a; }
+        .detail-content em { font-style: italic; }
+        .detail-content ul, .detail-content ol { margin: 0 0 1em; padding-left: 1.4em; }
+        .detail-content li { margin-bottom: 0.4em; }
+        .detail-content a { color: #5865F2; text-decoration: underline; word-break: break-all; }
+        .detail-content code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .detail-content pre { background: #f5f5f5; padding: 14px; border-radius: 10px; overflow-x: auto; margin: 0 0 1em; }
+        .detail-content blockquote { border-left: 3px solid #5865F2; padding-left: 12px; color: #666; margin: 0 0 1em; }
+        .detail-content h1, .detail-content h2, .detail-content h3 { font-weight: 800; margin: 1em 0 0.5em; }
+        .detail-content hr { border: none; border-top: 1px solid #eee; margin: 1.5em 0; }
 
         .detail-actions { display: flex; flex-wrap: wrap; gap: 12px; }
         .btn-download-lg { padding: 14px 32px; background: #1a1a1a; color: #fff; border-radius: 50px; font-weight: 700; font-size: 1rem; transition: 0.2s; }
@@ -506,7 +528,15 @@
     function renderModel(model) {
         const body = document.getElementById('detailBody');
         const imgHtml = model.image ? `<img src="${model.image}" alt="${model.name}" class="detail-hero-img">` : '';
-        const contentHtml = model.content ? escapeHtml(model.content) : '설명이 없습니다.';
+        let contentHtml = '설명이 없습니다.';
+        if (model.content) {
+            try {
+                const rawHtml = window.marked ? window.marked.parse(model.content) : escapeHtml(model.content);
+                contentHtml = window.DOMPurify ? window.DOMPurify.sanitize(rawHtml) : rawHtml;
+            } catch (e) {
+                contentHtml = escapeHtml(model.content);
+            }
+        }
         const updated = model.updated_at ? new Date(model.updated_at).toLocaleDateString('ko-KR') : '';
 
         body.innerHTML = `
@@ -520,7 +550,7 @@
                 </button>
                 <a class="btn-discord-link" href="${model.discord_url}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="lucide-fill"></i>디스코드에서 보기</a>
                 <button class="cart-add-btn${window.isInCart && window.isInCart(model.id) ? " in-cart" : ""}" data-model-id="${model.id}" onclick="addToCartFromCard(this, '${model.id}')" title="장바구니에 담기">
-                    <i data-lucide="bookmark" class="lucide-fill"></i>
+                    <i data-lucide="credit-card" class="lucide-fill"></i>
                 </button>
             </div>
         `;
@@ -556,6 +586,7 @@
     }
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="/cart.js"></script>
 </body>
 </html>

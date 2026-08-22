@@ -10,6 +10,7 @@
 
     <title>Rocord - 과속탐지기 시스템 시스템 상세 페이지</title>
     <meta name="theme-color" content="#5865F2">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil5Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
@@ -148,19 +149,46 @@
         .mobile-menu.active { transform: translateY(0); }
         .mobile-menu a { font-size: 1.1rem; font-weight: 700; width: 100%; text-align: center; padding: 10px 0; }
 
-        .user-dropdown { position: absolute; top: 60px; right: 40px; width: 260px; background: #fff; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); padding: 20px; display: none; flex-direction: column; gap: 15px; border: 1px solid #eee; z-index: 1002; }
+        .user-dropdown { position: fixed; top: 60px; right: 40px; width: 340px; background: #fff; border-radius: 18px; box-shadow: 0 16px 48px rgba(0,0,0,0.2); padding: 0; display: none; flex-direction: column; border: 1px solid #eee; z-index: 1002; overflow: hidden; }
         .user-dropdown.active { display: flex; }
-        .dropdown-profile-header { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .dropdown-avatar-large { width: 50px; height: 50px; border-radius: 50%; background: #eee; object-fit: cover; }
-        .dropdown-text-info { display: flex; flex-direction: column; overflow: hidden; }
-        .dropdown-name { font-weight: 800; font-size: 1rem; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dropdown-banner { height: 64px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+        .dropdown-profile-header { display: flex; align-items: flex-end; gap: 14px; padding: 0 20px 16px; margin-top: -28px; border-bottom: 1px solid #eee; }
+        .dropdown-avatar-large { width: 64px; height: 64px; border-radius: 50%; background: #eee; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0; }
+        .dropdown-text-info { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 4px; }
+        .dropdown-name { font-weight: 800; font-size: 1.05rem; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dropdown-id { font-size: 0.8rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .dropdown-stats { font-size: 0.9rem; color: #333; font-weight: 600; }
-        .dropdown-stats span { color: #5865F2; }
-        .cart-btn { width: 100%; padding: 10px; background: #f0f0f0; color: #333; border-radius: 8px; font-weight: 700; font-size: 0.9rem; text-align: center; transition: 0.2s; }
+        .dropdown-detail-list { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #eee; }
+        .dropdown-detail-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
+        .dropdown-detail-row .detail-label { display: flex; align-items: center; color: #888; font-weight: 600; }
+        .dropdown-detail-row .detail-label .lucide-fill { width: 14px; height: 14px; margin-right: 6px; }
+        .dropdown-detail-row .detail-value { color: #1a1a1a; font-weight: 700; }
+        .dropdown-detail-row .detail-value span { color: #5865F2; }
+        .dropdown-actions { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px 20px; }
+        .cart-btn { width: 100%; padding: 10px; background: #f0f0f0; color: #333; border-radius: 8px; font-weight: 700; font-size: 0.9rem; text-align: center; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         .cart-btn:hover { background: #e0e0e0; }
-        .logout-btn { width: 100%; padding: 8px; background: #ff4757; color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-align: center; }
+        .logout-btn { width: 100%; padding: 8px; background: #ff4757; color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-align: center; display: flex; align-items: center; justify-content: center; }
         .logout-btn:hover { background: #e84118; }
+
+        .cart-badge { display: none; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; background: #5865F2; color: #fff; border-radius: 10px; font-size: 0.7rem; align-items: center; justify-content: center; font-weight: 800; }
+        .cart-modal { background: #fff; width: 420px; max-width: calc(100vw - 40px); max-height: 80vh; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; display: flex; flex-direction: column; }
+        .modal-overlay.show .cart-modal { transform: scale(1); }
+        .cart-items-list { overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .cart-empty { text-align: center; color: #888; padding: 40px 10px; font-size: 0.9rem; line-height: 1.8; }
+        .cart-item { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #eee; border-radius: 12px; }
+        .cart-item-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #f0f0f0; flex-shrink: 0; }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-name { font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .cart-item-actions { display: flex; align-items: center; gap: 6px; }
+        .cart-item-download, .cart-item-remove { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; transition: 0.2s; color: #333; }
+        .cart-item-download:hover { background: #e5e9ff; color: #5865F2; }
+        .cart-item-remove:hover { background: #ffe5e5; color: #ff4757; }
+        .cart-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 6px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+        .cart-select-all { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #555; font-weight: 600; cursor: pointer; }
+        .cart-zip-btn { display: flex; align-items: center; padding: 8px 14px; background: #1a1a1a; color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.8rem; transition: 0.2s; }
+        .cart-zip-btn:hover:not(:disabled) { background: #333; }
+        .cart-zip-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .cart-item-check { width: 18px; height: 18px; accent-color: #5865F2; flex-shrink: 0; cursor: pointer; }
+        .cart-item-nofile { display: block; font-size: 0.75rem; color: #bbb; margin-top: 2px; }
         .auto-login-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 25px; cursor: pointer; user-select: none; font-size: 0.9rem; color: #666; }
         .checkbox-icon { width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; background: #fff; }
         .checkbox-icon svg { width: 12px; height: 12px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; display: none; }
@@ -194,7 +222,7 @@
             .nav-links { display: none; }
             .logo-container svg { height: 20px; }
             .hamburger-btn { display: block; }
-            .user-dropdown { right: 20px; width: 240px; }
+            .user-dropdown { right: 12px; width: min(340px, calc(100vw - 24px)); }
             .mobile-menu { top: 55px; border-radius: 0 0 20px 20px; }
         }
     </style>
@@ -252,6 +280,7 @@
 </div>
 
 <div class="user-dropdown" id="userDropdown">
+    <div class="dropdown-banner"></div>
     <div class="dropdown-profile-header">
         <img id="dropdownAvatar" class="dropdown-avatar-large" src="" alt="Profile">
         <div class="dropdown-text-info">
@@ -259,11 +288,24 @@
             <div id="dropdownId" class="dropdown-id">@username</div>
         </div>
     </div>
-    <div class="dropdown-stats">
-        내가 다운로드한 모델: <span id="downloadCount">0</span>개
+    <div class="dropdown-detail-list">
+        <div class="dropdown-detail-row">
+            <span class="detail-label"><i data-lucide="download" class="lucide-fill"></i>다운로드한 모델</span>
+            <span class="detail-value"><span id="downloadCount">0</span>개</span>
+        </div>
+        <div class="dropdown-detail-row">
+            <span class="detail-label"><i data-lucide="hash" class="lucide-fill"></i>디스코드 ID</span>
+            <span class="detail-value" id="dropdownDiscordId">-</span>
+        </div>
+        <div class="dropdown-detail-row">
+            <span class="detail-label"><i data-lucide="calendar" class="lucide-fill"></i>디스코드 가입일</span>
+            <span class="detail-value" id="dropdownJoined">-</span>
+        </div>
     </div>
-    <button class="cart-btn" onclick="alert('장바구니 기능은 추후 업데이트 예정입니다.')">🛒 장바구니</button>
-    <button class="logout-btn" onclick="logout()">로그아웃</button>
+    <div class="dropdown-actions">
+        <button class="cart-btn" onclick="openCart()"><i data-lucide="shopping-cart" class="lucide-fill"></i>장바구니<span class="cart-badge">0</span></button>
+        <button class="logout-btn" onclick="logout()"><i data-lucide="log-out" class="lucide-fill"></i>로그아웃</button>
+    </div>
 </div>
 
 <div class="modal-overlay" id="loginModalOverlay">
@@ -396,6 +438,7 @@
     })();
 
     window.onload = function() {
+        if (window.lucide) window.lucide.createIcons();
         // 토큰 체크는 IIFE에서 먼저 수행되므로, 여기서는 데이터 로드만 진행
         fetchModelDetail();
         fetchReviews();
@@ -495,6 +538,13 @@
         document.getElementById('dropdownName').innerText = data.global_name || data.username;
         document.getElementById('dropdownId').innerText = '@' + data.username;
         document.getElementById('downloadCount').innerText = data.download_count || 0;
+        document.getElementById('dropdownDiscordId').innerText = data.id;
+        try {
+            const joinTs = Number((BigInt(data.id) >> 22n) + 1420070400000n);
+            document.getElementById('dropdownJoined').innerText = new Date(joinTs).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch (e) {
+            document.getElementById('dropdownJoined').innerText = '-';
+        }
     }
 
     function openLoginModal() {
@@ -1015,5 +1065,7 @@
         chatBtn.classList.toggle('is-open');
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="/cart.js"></script>
 </body>
 </html>
