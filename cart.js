@@ -117,7 +117,7 @@
 
     if (cart.length === 0) {
       toolbar.style.display = "none";
-      list.innerHTML = '<div class="cart-empty">장바구니가 비어 있습니다.<br>모델 카드의 <i data-lucide="credit-card" class="lucide-fill"></i> 버튼을 눌러 담아보세요.</div>';
+      list.innerHTML = '<div class="cart-empty">장바구니가 비어 있습니다.<br>모델 카드의 <i data-lucide="shopping-cart" class="lucide-fill"></i> 버튼을 눌러 담아보세요.</div>';
     } else {
       toolbar.style.display = "flex";
       list.innerHTML = cart

@@ -84,7 +84,7 @@
         <div class="model-img-wrap">
           <img src="${model.image || "/widget-icon.png"}" alt="${model.name}" class="model-img">
           <button class="cart-add-btn${inCart ? " in-cart" : ""}" data-model-id="${model.id}" onclick="addToCartFromCard(this, '${model.id}')" title="장바구니에 담기">
-            <i data-lucide="credit-card" class="lucide-fill"></i>
+            <i data-lucide="shopping-cart" class="lucide-fill"></i>
           </button>
         </div>
         <div class="model-info">
