@@ -181,7 +181,7 @@
 </div>
 
 <header>
-    <div class="logo-container" onclick="location.href='https://rocorddev.kro.kr/index.html'">
+    <div class="logo-container" onclick="location.href='https://rocord.corerepublix.co.kr/index.html'">
         <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 454.000000 95.000000" preserveAspectRatio="xMidYMid meet">
             <g transform="translate(0.000000,95.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
                 <path d="M110 725 l0 -75 254 0 254 0 43 -45 c24 -25 48 -45 54 -45 6 0 34 24 63 53 l52 53 -68 67 -68 67 -292 0 -292 0 0 -75z"/>
@@ -199,10 +199,10 @@
     </div>
     <div class="header-right">
         <nav class="nav-links">
-            <a href="https://rocorddev.kro.kr/model.html">모델</a>
-            <a href="https://rocorddev.kro.kr/system.html" style="color:#5865F2">시스템</a>
-            <a href="https://rocorddev.kro.kr/car.html">차량</a>
-            <a href="https://rocorddev.kro.kr/shirt.html">복장</a>
+            <a href="https://rocord.corerepublix.co.kr/model.html">모델</a>
+            <a href="https://rocord.corerepublix.co.kr/system.html" style="color:#5865F2">시스템</a>
+            <a href="https://rocord.corerepublix.co.kr/car.html">차량</a>
+            <a href="https://rocord.corerepublix.co.kr/shirt.html">복장</a>
         </nav>
 
         <button id="headerLoginBtn" class="login-trigger-btn" onclick="openLoginModal()">
@@ -219,10 +219,10 @@
 </header>
 
 <div class="mobile-menu" id="mobileMenu">
-    <a href="https://rocorddev.kro.kr/model.html">모델</a>
-    <a href="https://rocorddev.kro.kr/system.html">시스템</a>
-    <a href="https://rocorddev.kro.kr/car.html">차량</a>
-    <a href="https://rocorddev.kro.kr/shirt.html">복장</a>
+    <a href="https://rocord.corerepublix.co.kr/model.html">모델</a>
+    <a href="https://rocord.corerepublix.co.kr/system.html">시스템</a>
+    <a href="https://rocord.corerepublix.co.kr/car.html">차량</a>
+    <a href="https://rocord.corerepublix.co.kr/shirt.html">복장</a>
 </div>
 
 <div class="user-dropdown" id="userDropdown">
@@ -494,7 +494,7 @@
 
     function loginWithDiscord() {
         // [중요] 현재 페이지 주소(쿼리 파라미터 제외)를 리다이렉트 URI로 사용
-        // 주의: 디스코드 개발자 포털의 Redirects 항목에 'https://rocorddev.kro.kr/gws8ver1.html'이 등록되어 있어야 합니다.
+        // 주의: 디스코드 개발자 포털의 Redirects 항목에 'https://rocord.corerepublix.co.kr/gws8ver1.html'이 등록되어 있어야 합니다.
         const currentRedirectUri = window.location.origin + window.location.pathname;
         const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(currentRedirectUri)}&response_type=token&scope=identify`;
         window.location.href = oauthUrl;
