@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rocord - 차량</title>
     <meta name="theme-color" content="#5865F2">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>window.MODEL_CATEGORY = "차량";</script>
     <style>
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
         @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil5Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
@@ -115,6 +117,15 @@
             /* margin-top: auto; 제거 (상세버튼이 밀어줌) */
         }
         .btn-download:hover { background: #333; }
+
+        .lucide-fill { width: 16px; height: 16px; fill: currentColor; vertical-align: -3px; margin-right: 4px; }
+
+        .model-pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 40px; flex-wrap: wrap; }
+        .page-btn { min-width: 40px; height: 40px; padding: 0 10px; border-radius: 10px; border: 2px solid #eee; background: #f9f9f9; font-weight: 700; color: #555; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+        .page-btn:hover:not(:disabled) { border-color: #5865F2; color: #5865F2; }
+        .page-btn.active { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-btn .lucide-fill { margin-right: 0; }
 
         .spinner-container { grid-column: 1 / -1; display: flex; justify-content: center; padding: 50px 0; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #5865F2; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -365,7 +376,6 @@
 
     let isLoggedIn = false;
     let currentUserToken = null;
-    let allModelsData = []; 
 
     // 즉시 실행 함수: URL이나 저장소에서 토큰 확인 및 자동 로그인 (페이지 로드 즉시 실행)
     (function checkLoginImmediately() {
@@ -522,73 +532,7 @@
         location.reload();
     }
 
-    function fetchModels() {
-        fetch(`${BACKEND_URL}/api/models`)
-        .then(res => res.json())
-        .then(data => {
-            // '시스템' 텍스트가 포함된 모델만 필터링 (system.html 전용 로직)
-            allModelsData = data.filter(model => model.name.includes("차량"));
-            applyFilters(); 
-        })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('modelGrid').innerHTML = '<div style="text-align:center;width:100%">데이터를 불러오는데 실패했습니다.</div>';
-        });
-    }
-
-    function applyFilters() {
-        const query = document.getElementById('search').value.toLowerCase();
-        const sortOrder = document.getElementById('sortOrder').value;
-
-        // 1. 검색 필터링
-        let filtered = allModelsData.filter(model => 
-            model.name.toLowerCase().includes(query) || 
-            model.desc.toLowerCase().includes(query)
-        );
-
-        // 2. 정렬
-        if(sortOrder === 'newest') {
-            filtered.reverse(); 
-        }
-
-        renderModels(filtered);
-    }
-
-    function renderModels(models) {
-        const grid = document.getElementById('modelGrid');
-        grid.innerHTML = ''; 
-
-        if (models.length === 0) {
-            grid.innerHTML = '<div style="text-align:center; width:100%; grid-column: 1 / -1;">등록된 차량이 없습니다.</div>';
-            return;
-        }
-
-        models.forEach(model => {
-            const card = document.createElement('div');
-            card.className = 'model-card';
-
-            // [수정] 상세페이지 버튼 생성 로직
-            let detailBtnHtml = '';
-            // detail_url이 존재하고 비어있지 않은지 확인
-            if (model.detail_url && model.detail_url.trim() !== "") {
-                detailBtnHtml = `<button class="btn-detail" onclick="window.location.href='${model.detail_url}'">상세페이지</button>`;
-            } else {
-                // 비활성화 버튼
-                detailBtnHtml = `<button class="btn-detail" disabled>세부페이지가 없습니다</button>`;
-            }
-
-            card.innerHTML = `
-                <img src="${model.image}" alt="${model.name}" class="model-img">
-                <div class="model-info">
-                    <h3>${model.name}</h3>
-                    <p>${model.desc}</p>
-                </div>
-                ${detailBtnHtml}
-                <button class="btn-download" onclick="downloadModel(this, '${model.name}')">다운로드</button>
-            `;
-            grid.appendChild(card);
-        });
-    }
+    // fetchModels / applyFilters / renderModels는 /model-list.js 공용 스크립트가 처리합니다.
 
     function downloadModel(btnElement, targetId) {
         if (!isLoggedIn) {
@@ -596,7 +540,19 @@
             openLoginModal();
             return;
         }
-        
+
+        const model = allModelsData.find(m => m.id === targetId);
+        if (model) {
+            if (!model.download_url) {
+                alert("다운로드 파일이 없습니다.");
+                return;
+            }
+            window.location.href = model.download_url;
+            let countSpan = document.getElementById('downloadCount');
+            if(countSpan) countSpan.innerText = parseInt(countSpan.innerText) + 1;
+            return;
+        }
+
         const originalText = btnElement.innerHTML;
         btnElement.innerHTML = '<span class="btn-loading-spinner"></span>';
         btnElement.disabled = true;
@@ -636,6 +592,7 @@
         chatBtn.classList.toggle('is-open');
     }
 </script>
+<script src="/model-list.js"></script>
 
 </body>
 </html>
