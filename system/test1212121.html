@@ -622,7 +622,7 @@
     /* -------------------------------------------------------------------------- */
 
     const CLIENT_ID = '1460856182716502036';
-    const REDIRECT_URI = 'https://rocord.corerepublix.co.kr'; 
+    const REDIRECT_URI = 'https://rocord.corerepublix.co.kr/auth.html'; 
     const BACKEND_URL = 'https://rocorddev.pythonanywhere.com';
 
     let isLoggedIn = false;
@@ -765,6 +765,7 @@
     }
 
     function loginWithDiscord() {
+        sessionStorage.setItem('post_login_redirect', window.location.pathname);
         const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify`;
         window.location.href = oauthUrl;
     }
