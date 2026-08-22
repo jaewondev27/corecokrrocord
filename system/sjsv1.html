@@ -330,18 +330,10 @@
 <style>
 .cx-footer { padding: 2.5rem 1.5rem 4rem; background: #fff; border-top: 1px solid rgba(0, 0, 0, 0.08); font-family: "Google Sans Flex", -apple-system, "Noto Sans KR", sans-serif; text-align: left; }
 .cx-footer__inner { max-width: 72rem; margin: 0 auto; }
-.cx-footer__top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1.5rem; }
 .cx-footer__logo { height: 2rem; width: auto; display: block; margin-bottom: 1rem; }
 .cx-footer__brand { font-weight: 700; font-size: 1rem; margin: 0; color: #111827; }
 .cx-footer__copy { font-size: 0.875rem; color: #666666; margin-top: 0.2rem; }
-.cx-footer__nav { display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.875rem; font-weight: 600; }
-.cx-footer__nav a { color: #666666; text-decoration: none; transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-.cx-footer__nav a:hover { color: #000000; }
 .cx-footer__bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0, 0, 0, 0.08); }
-.cx-footer__legal { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0; font-size: 0.8125rem; color: #666666; }
-.cx-footer__legal a { color: #666666; text-decoration: none; transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-.cx-footer__legal a:hover { color: #000000; }
-.cx-footer__legal span { color: rgba(0, 0, 0, 0.15); }
 .cx-footer__fine { margin: 0; font-size: 0.8125rem; color: #666666; }
 .cx-footer__cf { display: flex; width: fit-content; margin-left: auto; align-items: center; gap: 0.4rem; margin-top: 1.5rem; font-size: 0.75rem; font-weight: 500; color: #666666; text-decoration: none; transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 .cx-footer__cf:hover { color: #000000; }
@@ -350,26 +342,12 @@
 </style>
 <footer class="cx-footer">
     <div class="cx-footer__inner">
-        <div class="cx-footer__top">
-            <div class="cx-footer__meta">
-                <img class="cx-footer__logo" src="/logo-color.png" alt="CorerepubliX">
-                <p class="cx-footer__brand">CorerepubliX</p>
-                <p class="cx-footer__copy">© 2026 CorerepubliX. All rights reserved. CPU 사용을 즐겁게 — 소프트웨어로.</p>
-            </div>
-            <nav class="cx-footer__nav" aria-label="푸터">
-                <a href="https://corerepublix.co.kr/#works" target="_blank" rel="noopener noreferrer">프로그램</a>
-                <a href="https://corerepublix.co.kr/#what" target="_blank" rel="noopener noreferrer">팀</a>
-                <a href="https://corerepublix.co.kr/#contact" target="_blank" rel="noopener noreferrer">문의</a>
-            </nav>
+        <div class="cx-footer__meta">
+            <img class="cx-footer__logo" src="/logo-color.png" alt="CorerepubliX">
+            <p class="cx-footer__brand">CorerepubliX</p>
+            <p class="cx-footer__copy">© 2026 CorerepubliX. All rights reserved. CPU 사용을 즐겁게 — 소프트웨어로.</p>
         </div>
         <div class="cx-footer__bottom">
-            <p class="cx-footer__legal">
-                <a href="https://corerepublix.co.kr/terms/rocordbot" target="_blank" rel="noopener noreferrer">Rocordbot 이용약관</a>
-                <span aria-hidden="true">·</span>
-                <a href="https://corerepublix.co.kr/privacy/rocordbot" target="_blank" rel="noopener noreferrer">Rocordbot 개인정보처리방침</a>
-                <span aria-hidden="true">·</span>
-                <a href="https://corerepublix.co.kr/privacy/auto-call" target="_blank" rel="noopener noreferrer">자동연결 개인정보처리방침</a>
-            </p>
             <p class="cx-footer__fine">대표자: sj_w0n_</p>
         </div>
         <a class="cx-footer__cf" href="https://www.cloudflare.com/" target="_blank" rel="noopener noreferrer">
@@ -473,10 +451,8 @@
         // 로딩 화면 표시 (이미 켜져있을 수 있지만 확실히 하기 위해)
         document.getElementById('redirectOverlay').classList.add('active');
 
-        fetch(`${BACKEND_URL}/api/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ access_token: token })
+        fetch('https://discord.com/api/users/@me', {
+            headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
         .then(data => {
@@ -870,7 +846,7 @@
     </div>
 
     <div id="chat-button" onclick="toggleChat()">
-        <img id="widget-icon-img" src="/bot-icon.png" alt="상담">
+        <img id="widget-icon-img" src="/widget-icon.png" alt="상담">
         <div id="widget-icon-close">×</div>
     </div>
 
