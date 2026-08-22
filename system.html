@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocord - 시스템</title>
+    <meta name="theme-color" content="#5865F2">
+    <style>
+        @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+        @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil5Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+        @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil6ExtraBold.woff2') format('woff2'); font-weight: 800; font-display: swap; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Daeojamjil', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #ffffff; color: #1a1a1a; padding-top: 60px; line-height: 1.6; }
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; }
+
+        /* 헤더 스타일 */
+        header { position: fixed; top: 0; width: 100%; height: 60px; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; backdrop-filter: blur(15px); background: rgba(255, 255, 255, 0.85); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo-container svg { height: 24px; width: auto; display: block; cursor: pointer; }
+        
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { font-size: 0.95rem; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover { color: #5865F2; }
+
+        .login-trigger-btn { background: #1a1a1a; color: #fff; padding: 8px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; transition: 0.3s; display: flex; align-items: center; gap: 8px; max-width: 150px; }
+        .login-trigger-btn:hover { background: #333; transform: translateY(-2px); }
+        .profile-name { display: inline-block; max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+        .user-avatar { width: 24px; height: 24px; border-radius: 50%; display: none; }
+
+        /* 모달 스타일 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.show { opacity: 1; }
+        .login-modal { background: #fff; width: 340px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .modal-overlay.show .login-modal { transform: scale(1); }
+        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; color: #999; cursor: pointer; }
+        .modal-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 25px; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        .input-group input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.95rem; outline: none; transition: 0.3s; background: #f9f9f9; }
+        .input-group input:focus { border-color: #5865F2; background: #fff; }
+        .btn-login-submit { width: 100%; padding: 12px; background: #1a1a1a; color: #fff; border-radius: 50px; font-weight: 700; font-size: 1rem; margin-bottom: 20px; transition: 0.2s; }
+        .btn-login-submit:hover { background: #333; }
+        .social-divider { text-align: center; font-size: 0.8rem; color: #aaa; margin-bottom: 20px; position: relative; }
+        .social-divider::before, .social-divider::after { content: ""; position: absolute; top: 50%; width: 30%; height: 1px; background: #eee; }
+        .social-divider::before { left: 0; }
+        .social-divider::after { right: 0; }
+        .btn-discord-modal { width: 100%; padding: 12px; background: #5865F2; color: #fff; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .btn-discord-modal:hover { background: #4752c4; }
+
+        /* 컨텐츠 영역 */
+        .content-container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; min-height: 80vh; }
+        
+        /* 페이지 헤더 */
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 40px; flex-wrap: wrap; gap: 20px;
+        }
+        .page-title { font-size: 2rem; font-weight: 800; color: #1a1a1a; margin-left: 15px; }
+        
+        /* 검색 및 정렬 컨트롤 그룹 */
+        .controls-wrapper { display: flex; gap: 10px; align-items: center; width: 100%; max-width: 450px; justify-content: flex-end; }
+
+        /* 정렬 드롭다운 */
+        .sort-select {
+            padding: 12px 15px; border-radius: 50px;
+            border: 2px solid #eee; background: #f9f9f9;
+            font-size: 0.9rem; outline: none; font-weight: 700; color: #555; cursor: pointer; transition: 0.3s;
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 15px center; background-size: 15px;
+            padding-right: 40px; min-width: 120px;
+        }
+        .sort-select:focus { border-color: #5865F2; background-color: #fff; }
+
+        /* 검색창 스타일 */
+        .search-box { position: relative; width: 100%; flex-grow: 1; }
+        .search-box input {
+            width: 100%; padding: 12px 20px; border-radius: 50px;
+            border: 2px solid #eee; background: #f9f9f9;
+            font-size: 0.95rem; outline: none; transition: 0.3s;
+        }
+        .search-box input:focus { border-color: #5865F2; background: #fff; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.1); }
+
+        /* 모델 그리드 */
+        .model-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; }
+        
+        /* 카드 스타일 */
+        .model-card {
+            background: #fff; border: 1px solid #eee; 
+            border-radius: 24px; padding: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
+            transition: 0.3s; height: 100%; display: flex; flex-direction: column;
+        }
+        .model-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .model-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 16px; margin-bottom: 15px; background: #f0f0f0; }
+        .model-info h3 { font-size: 1.2rem; margin-bottom: 8px; font-weight: 700; }
+        .model-info p { font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5; flex-grow: 1; }
+        
+        /* [수정] 상세페이지 버튼 스타일 추가 */
+        .btn-detail {
+            width: 100%; padding: 12px; background: #fff; color: #1a1a1a;
+            border: 2px solid #eee; margin-bottom: 8px;
+            border-radius: 12px; font-weight: 700; text-align: center; transition: 0.2s;
+            margin-top: auto; /* 상단 내용과 거리 벌리기 */
+        }
+        .btn-detail:hover:not(:disabled) { border-color: #1a1a1a; background: #f9f9f9; }
+        .btn-detail:disabled {
+            background: #f5f5f5; color: #bbb; border-color: #eee; cursor: not-allowed; opacity: 0.7;
+        }
+
+        .btn-download { 
+            width: 100%; padding: 12px; background: #1a1a1a; color: #fff; 
+            border-radius: 12px; font-weight: 700; text-align: center; transition: 0.2s; 
+            /* margin-top: auto; 제거 (상세버튼이 밀어줌) */
+        }
+        .btn-download:hover { background: #333; }
+
+        .spinner-container { grid-column: 1 / -1; display: flex; justify-content: center; padding: 50px 0; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #5865F2; border-radius: 50%; animation: spin 1s linear infinite; }
+        .btn-loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 햄버거 버튼 및 모바일 메뉴 추가 */
+        .hamburger-btn { display: none; width: 24px; height: 24px; position: relative; z-index: 1100; }
+        .hamburger-btn span { display: block; width: 100%; height: 2px; background: #1a1a1a; position: absolute; left: 0; transition: 0.3s; }
+        .hamburger-btn span:nth-child(1) { top: 4px; }
+        .hamburger-btn span:nth-child(2) { top: 11px; }
+        .hamburger-btn span:nth-child(3) { top: 18px; }
+        .hamburger-btn.active span:nth-child(1) { top: 11px; transform: rotate(45deg); }
+        .hamburger-btn.active span:nth-child(2) { opacity: 0; }
+        .hamburger-btn.active span:nth-child(3) { top: 11px; transform: rotate(-45deg); }
+
+        .mobile-menu { position: fixed; top: 60px; left: 0; width: 100%; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 15px; transform: translateY(-150%); transition: transform 0.3s ease-in-out; z-index: 999; }
+        .mobile-menu.active { transform: translateY(0); }
+        .mobile-menu a { font-size: 1.1rem; font-weight: 700; width: 100%; text-align: center; padding: 10px 0; }
+
+        .user-dropdown { position: absolute; top: 60px; right: 40px; width: 260px; background: #fff; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); padding: 20px; display: none; flex-direction: column; gap: 15px; border: 1px solid #eee; z-index: 1002; }
+        .user-dropdown.active { display: flex; }
+        .dropdown-profile-header { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .dropdown-avatar-large { width: 50px; height: 50px; border-radius: 50%; background: #eee; object-fit: cover; }
+        .dropdown-text-info { display: flex; flex-direction: column; overflow: hidden; }
+        .dropdown-name { font-weight: 800; font-size: 1rem; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dropdown-id { font-size: 0.8rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dropdown-stats { font-size: 0.9rem; color: #333; font-weight: 600; }
+        .dropdown-stats span { color: #5865F2; }
+        .cart-btn { width: 100%; padding: 10px; background: #f0f0f0; color: #333; border-radius: 8px; font-weight: 700; font-size: 0.9rem; text-align: center; transition: 0.2s; }
+        .cart-btn:hover { background: #e0e0e0; }
+        .logout-btn { width: 100%; padding: 8px; background: #ff4757; color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-align: center; }
+        .logout-btn:hover { background: #e84118; }
+        .auto-login-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 25px; cursor: pointer; user-select: none; font-size: 0.9rem; color: #666; }
+        .checkbox-icon { width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; background: #fff; }
+        .checkbox-icon svg { width: 12px; height: 12px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; display: none; }
+        .auto-login-wrapper input[type="checkbox"] { display: none; }
+        .auto-login-wrapper input[type="checkbox"]:checked + .checkbox-icon { background: #5865F2; border-color: #5865F2; }
+        .auto-login-wrapper input[type="checkbox"]:checked + .checkbox-icon svg { display: block; }
+
+        footer { padding: 40px; font-size: 0.75rem; color: #666; text-align: center; background: #f9f9f9; border-top: 1px solid #eee; margin-top: 60px; }
+
+        /* 로딩 오버레이 (최상단 배치) */
+        .redirect-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 1);
+            z-index: 9999;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .redirect-overlay.active { display: flex; }
+        .loading-spinner-large {
+            width: 50px; height: 50px; border: 5px solid #f3f3f3;
+            border-top: 5px solid #5865F2; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) { .model-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 900px) { .model-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            header { height: 55px; padding: 0 20px; }
+            .nav-links { display: none; }
+            .logo-container svg { height: 20px; }
+            .hamburger-btn { display: block; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .controls-wrapper { max-width: 100%; }
+            .page-title { margin-left: 0; }
+            .model-grid { grid-template-columns: repeat(1, 1fr); }
+            .user-dropdown { right: 20px; width: 240px; }
+            .mobile-menu { top: 55px; border-radius: 0 0 20px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="redirect-overlay" id="redirectOverlay">
+    <div class="loading-spinner-large"></div>
+    <h2 style="font-weight: 700;">로그인 정보 확인 중...</h2>
+</div>
+
+<header>
+    <div class="logo-container" onclick="location.href='index.html'">
+        <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 454.000000 95.000000" preserveAspectRatio="xMidYMid meet">
+            <g transform="translate(0.000000,95.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                <path d="M110 725 l0 -75 254 0 254 0 43 -45 c24 -25 48 -45 54 -45 6 0 34 24 63 53 l52 53 -68 67 -68 67 -292 0 -292 0 0 -75z"/>
+                <path d="M940 513 l1 -178 82 -92 81 -93 218 0 218 0 0 264 c0 231 -2 265 -16 270 -9 3 -144 6 -300 6 l-284 0 0 -177z m430 -88 l0 -175 -74 0 -73 0 -57 67 -56 67 0 102 c0 55 3 104 7 107 3 4 62 7 130 7 l123 0 0 -175z"/>
+                <path d="M2350 516 l0 -175 83 -95 82 -94 218 -1 217 -1 -2 268 -3 267 -297 3 -298 2 0 -174z m438 -93 l2 -173 -77 0 -78 0 -57 71 -58 71 0 97 c0 54 3 101 7 105 4 3 63 5 132 4 l126 -3 3 -172z"/>
+                <path d="M1640 410 l0 -270 263 0 263 0 43 44 c41 42 42 43 19 50 -13 3 -110 6 -215 6 l-193 0 0 175 0 175 178 0 178 0 25 28 c62 68 85 62 -255 62 l-306 0 0 -270z"/>
+                <path d="M3080 615 l0 -65 213 0 213 0 34 -35 c19 -19 39 -35 45 -35 6 0 29 18 50 40 l39 40 -59 60 -59 60 -238 0 -238 0 0 -65z"/>
+                <path d="M3780 410 l0 -270 224 0 224 0 70 113 c109 174 108 145 15 294 l-80 128 -226 3 -227 2 0 -270z m382 93 c62 -99 63 -84 -9 -194 l-44 -69 -79 0 -80 0 0 175 0 175 78 0 79 0 55 -87z"/>
+                <path d="M510 295 l135 -135 110 0 110 0 -135 135 -135 135 -110 0 -110 0 135 -135z"/>
+                <path d="M3355 318 c28 -29 75 -79 105 -111 l54 -57 96 0 95 0 -110 110 -110 110 -89 0 -90 0 49 -52z"/>
+                <path d="M110 255 l0 -95 95 0 95 0 0 95 0 95 -95 0 -95 0 0 -95z"/>
+                <path d="M3080 230 l0 -80 80 0 81 0 -3 78 -3 77 -77 3 -78 3 0 -81z"/>
+            </g>
+        </svg>
+    </div>
+    <div class="header-right">
+        <nav class="nav-links">
+            <a href="model.html">모델</a>
+            <a href="system.html" style="color:#5865F2">시스템</a>
+            <a href="car.html">차량</a>
+            <a href="shirt.html">복장</a>
+        </nav>
+
+        <button id="headerLoginBtn" class="login-trigger-btn" onclick="openLoginModal()">
+            <img id="userAvatar" class="user-avatar" src="" alt="">
+            <span id="loginBtnText" class="profile-name">로그인</span>
+        </button>
+
+        <button class="hamburger-btn" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="model.html">모델</a>
+    <a href="system.html">시스템</a>
+    <a href="car.html">차량</a>
+    <a href="shirt.html">복장</a>
+</div>
+
+<div class="user-dropdown" id="userDropdown">
+    <div class="dropdown-profile-header">
+        <img id="dropdownAvatar" class="dropdown-avatar-large" src="" alt="Profile">
+        <div class="dropdown-text-info">
+            <div id="dropdownName" class="dropdown-name">사용자</div>
+            <div id="dropdownId" class="dropdown-id">@username</div>
+        </div>
+    </div>
+    <div class="dropdown-stats">
+        내가 다운로드한 모델: <span id="downloadCount">0</span>개
+    </div>
+    <button class="cart-btn" onclick="alert('장바구니 기능은 추후 업데이트 예정입니다.')">🛒 장바구니</button>
+    <button class="logout-btn" onclick="logout()">로그아웃</button>
+</div>
+
+<div class="modal-overlay" id="loginModalOverlay">
+    <div class="login-modal">
+        <span class="modal-close" onclick="closeLoginModal()">&times;</span>
+        <h2 class="modal-title">로그인</h2>
+        <div class="input-group">
+            <input type="text" id="loginId" placeholder="아이디">
+        </div>
+        <div class="input-group">
+            <input type="password" id="loginPw" placeholder="비밀번호">
+        </div>
+        <label class="auto-login-wrapper">
+            <input type="checkbox">
+            <span class="checkbox-icon">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </span>
+            자동로그인
+        </label>
+        <button class="btn-login-submit" onclick="handleLoginSubmit()">로그인</button>
+        <div class="social-divider">소셜 로그인</div>
+        <button class="btn-discord-modal" onclick="loginWithDiscord()">
+            <svg width="24" height="24" viewBox="0 0 127 96" fill="white">
+                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+            </svg>
+            Discord로 로그인
+        </button>
+    </div>
+</div>
+
+<div class="content-container">
+    <div class="page-header">
+        <h1 class="page-title">시스템 System</h1>
+        <div class="controls-wrapper">
+            <select id="sortOrder" class="sort-select" onchange="applyFilters()">
+                <option value="newest">최신순</option>
+                <option value="oldest">오래된순</option>
+            </select>
+            <div class="search-box">
+                <input type="text" id="search" placeholder="모델 검색..." oninput="applyFilters()">
+            </div>
+        </div>
+    </div>
+
+    <div class="model-grid" id="modelGrid">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    © 2025-2026 Rocord Deploy. All Rights Reserved.
+</footer>
+
+<script>
+    const CLIENT_ID = '1460856182716502036';
+    const BACKEND_URL = 'https://rocorddev.pythonanywhere.com';
+
+    let isLoggedIn = false;
+    let currentUserToken = null;
+    let allModelsData = []; 
+
+    // 즉시 실행 함수: URL이나 저장소에서 토큰 확인 및 자동 로그인 (페이지 로드 즉시 실행)
+    (function checkLoginImmediately() {
+        const urlHash = window.location.hash.substring(1);
+        const urlParams = new URLSearchParams(urlHash);
+        const accessTokenInUrl = urlParams.get('access_token');
+        const storedToken = localStorage.getItem('discord_token');
+        
+        // 1. 디스코드 로그인 후 리다이렉트 된 경우 (URL에 토큰 존재)
+        if (accessTokenInUrl) {
+            document.getElementById('redirectOverlay').classList.add('active'); // 로딩 화면 즉시 표시
+            localStorage.setItem('discord_token', accessTokenInUrl); // 토큰 저장
+            
+            // URL 정리 (토큰 정보 숨김)
+            history.replaceState(null, null, window.location.pathname);
+            
+            // 로그인 처리 시작
+            loginToBackend(accessTokenInUrl);
+        }
+        // 2. 이미 로그인 된 경우 (저장된 토큰 존재)
+        else if (storedToken) {
+            document.getElementById('redirectOverlay').classList.add('active'); // 로딩 화면 즉시 표시
+            loginToBackend(storedToken);
+        }
+    })();
+
+    window.onload = function() {
+        fetchModels();
+        
+        document.getElementById('loginModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeLoginModal();
+        });
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('userDropdown');
+            const headerBtn = document.getElementById('headerLoginBtn');
+            const hamburger = document.querySelector('.hamburger-btn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            if (!dropdown.contains(e.target) && !headerBtn.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+            if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+                hamburger.classList.remove('active');
+            }
+        });
+    };
+
+    function toggleMobileMenu() {
+        const btn = document.querySelector('.hamburger-btn');
+        const menu = document.getElementById('mobileMenu');
+        btn.classList.toggle('active');
+        menu.classList.toggle('active');
+    }
+
+    function loginToBackend(token) {
+        document.getElementById('redirectOverlay').classList.add('active');
+
+        fetch(`${BACKEND_URL}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: token })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) throw new Error(data.error);
+            currentUserToken = token;
+            isLoggedIn = true;
+            updateUI(data);
+            closeLoginModal();
+        })
+        .catch(err => {
+            console.error(err);
+            localStorage.removeItem('discord_token'); // 유효하지 않은 토큰 삭제
+        })
+        .finally(() => {
+            // 통신 완료 후 로딩 오버레이 제거
+            document.getElementById('redirectOverlay').classList.remove('active');
+        });
+    }
+
+    function updateUI(data) {
+        const loginText = document.getElementById('loginBtnText');
+        const avatar = document.getElementById('userAvatar');
+        const btn = document.getElementById('headerLoginBtn');
+
+        loginText.innerText = data.global_name || data.username;
+        avatar.style.display = 'block';
+        let avatarUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
+        if (data.avatar) {
+            avatarUrl = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png`;
+        }
+        avatar.src = avatarUrl;
+        
+        btn.style.background = "transparent"; 
+        btn.style.color = "#1a1a1a";
+        btn.style.border = "1px solid #ddd";
+        
+        document.getElementById('dropdownAvatar').src = avatarUrl;
+        document.getElementById('dropdownName').innerText = data.global_name || data.username;
+        document.getElementById('dropdownId').innerText = '@' + data.username;
+        document.getElementById('downloadCount').innerText = data.download_count || 0;
+    }
+
+    function openLoginModal() {
+        if(isLoggedIn) {
+            document.getElementById('userDropdown').classList.toggle('active');
+        } else {
+            const modal = document.getElementById('loginModalOverlay');
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.classList.add('show'); }, 10);
+        }
+    }
+
+    function closeLoginModal() {
+        const modal = document.getElementById('loginModalOverlay');
+        modal.classList.remove('show');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+    }
+
+    function handleLoginSubmit() {
+        const id = document.getElementById('loginId').value;
+        const pw = document.getElementById('loginPw').value;
+        if(!id || !pw) return alert("정보를 입력하세요.");
+
+        fetch(`${BACKEND_URL}/api/admin/login`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id, pw})
+        })
+        .then(res=>res.json())
+        .then(data => {
+            if(data.success) {
+                localStorage.setItem('admin_token', data.token);
+                window.location.href = 'upload.html';
+            } else {
+                alert("관리자 로그인 실패");
+            }
+        });
+    }
+
+    function loginWithDiscord() {
+        // [중요] 현재 페이지 주소(쿼리 파라미터 제외)를 리다이렉트 URI로 사용
+        // system.html로 바로 돌아오도록 설정됨
+        // 주의: 디스코드 개발자 포털의 Redirects 항목에 'https://rocorddev.kro.kr/system.html'이 등록되어 있어야 합니다.
+        const currentRedirectUri = window.location.origin + window.location.pathname;
+        
+        const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(currentRedirectUri)}&response_type=token&scope=identify`;
+        window.location.href = oauthUrl;
+    }
+
+    function logout() {
+        localStorage.removeItem('discord_token');
+        isLoggedIn = false;
+        currentUserToken = null;
+        location.reload();
+    }
+
+    function fetchModels() {
+        fetch(`${BACKEND_URL}/api/models`)
+        .then(res => res.json())
+        .then(data => {
+            // '시스템' 텍스트가 포함된 모델만 필터링 (system.html 전용 로직)
+            allModelsData = data.filter(model => model.name.includes("시스템"));
+            applyFilters(); 
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('modelGrid').innerHTML = '<div style="text-align:center;width:100%">데이터를 불러오는데 실패했습니다.</div>';
+        });
+    }
+
+    function applyFilters() {
+        const query = document.getElementById('search').value.toLowerCase();
+        const sortOrder = document.getElementById('sortOrder').value;
+
+        // 1. 검색 필터링
+        let filtered = allModelsData.filter(model => 
+            model.name.toLowerCase().includes(query) || 
+            model.desc.toLowerCase().includes(query)
+        );
+
+        // 2. 정렬
+        if(sortOrder === 'newest') {
+            filtered.reverse(); 
+        }
+
+        renderModels(filtered);
+    }
+
+    function renderModels(models) {
+        const grid = document.getElementById('modelGrid');
+        grid.innerHTML = ''; 
+
+        if (models.length === 0) {
+            grid.innerHTML = '<div style="text-align:center; width:100%; grid-column: 1 / -1;">등록된 시스템이 없습니다.</div>';
+            return;
+        }
+
+        models.forEach(model => {
+            const card = document.createElement('div');
+            card.className = 'model-card';
+
+            // [수정] 상세페이지 버튼 생성 로직
+            let detailBtnHtml = '';
+            // detail_url이 존재하고 비어있지 않은지 확인
+            if (model.detail_url && model.detail_url.trim() !== "") {
+                detailBtnHtml = `<button class="btn-detail" onclick="window.location.href='${model.detail_url}'">상세페이지</button>`;
+            } else {
+                // 비활성화 버튼
+                detailBtnHtml = `<button class="btn-detail" disabled>세부페이지가 없습니다</button>`;
+            }
+
+            card.innerHTML = `
+                <img src="${model.image}" alt="${model.name}" class="model-img">
+                <div class="model-info">
+                    <h3>${model.name}</h3>
+                    <p>${model.desc}</p>
+                </div>
+                ${detailBtnHtml}
+                <button class="btn-download" onclick="downloadModel(this, '${model.name}')">다운로드</button>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function downloadModel(btnElement, targetId) {
+        if (!isLoggedIn) {
+            alert("🔒 로그인이 필요한 서비스입니다.");
+            openLoginModal();
+            return;
+        }
+        
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<span class="btn-loading-spinner"></span>';
+        btnElement.disabled = true;
+
+        fetch(`${BACKEND_URL}/api/request_download`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentUserToken}` 
+            },
+            body: JSON.stringify({ target_id: targetId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.url) {
+                window.location.href = data.url;
+                let countSpan = document.getElementById('downloadCount');
+                if(countSpan) countSpan.innerText = parseInt(countSpan.innerText) + 1;
+            } else {
+                alert("링크를 찾을 수 없습니다.");
+            }
+        })
+        .catch(err => {
+            alert("오류가 발생했습니다.");
+        })
+        .finally(() => {
+            setTimeout(() => {
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            }, 2000);
+        });
+    }
+</script>
+
+</body>
+</html>

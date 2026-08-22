@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocord - Admin Control Center</title>
+    <meta name="theme-color" content="#5865F2">
+    <style>
+        @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+        @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil5Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Daeojamjil', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8f9fa; color: #1a1a1a; padding-top: 60px; line-height: 1.6; }
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; }
+
+        /* 로딩 오버레이 */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #5865F2; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        header { position: fixed; top: 0; width: 100%; height: 60px; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; backdrop-filter: blur(15px); background: rgba(255, 255, 255, 0.95); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo-container { font-size: 1.2rem; font-weight: 800; color: #333; cursor: pointer; }
+        
+        .header-right { display: flex; align-items: center; gap: 20px; font-weight: 700; color: #333; }
+        
+        .content-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; position: relative; text-align: center; }
+        .page-title { font-size: 2rem; font-weight: 800; margin-bottom: 30px; color: #333; text-align: left; }
+        
+        /* 대시보드 그리드 */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 50px; }
+        
+        .dash-card {
+            position: relative; border-radius: 20px; overflow: hidden; height: 300px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: #fff;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: transform 0.2s;
+        }
+        .dash-card:hover { transform: translateY(-5px); }
+
+        .dash-card-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center; filter: blur(8px) brightness(0.7); z-index: 1;
+        }
+        .dash-card-content {
+            position: relative; z-index: 2; text-align: center; color: #fff; width: 100%;
+        }
+        .dash-btn {
+            padding: 15px 40px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: 2px solid #fff;
+            color: #fff; font-size: 1.2rem; font-weight: 700; border-radius: 50px;
+            transition: background 0.2s;
+        }
+        .dash-btn:hover { background: #fff; color: #333; }
+
+        /* 모델 및 공지 관리 섹션 (숨김 처리됨) */
+        .management-section { display: none; text-align: left; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-text-back { padding: 10px 20px; background: #eee; border-radius: 8px; font-weight: 700; margin-right: 10px; }
+        .btn-text-add { padding: 10px 20px; background: #1a1a1a; color: #fff; border-radius: 8px; font-weight: 700; }
+        
+        .model-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;
+        }
+        .model-card {
+            background: #fff; border: 1px solid #eee; border-radius: 16px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+        }
+        .model-img { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 15px; background: #f0f0f0; }
+        .model-info h3 { font-size: 1.2rem; margin-bottom: 8px; font-weight: 700; }
+        .model-info p { font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5; flex-grow: 1; }
+        .action-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-edit { flex: 1; padding: 8px; background: #5865F2; color: #fff; border-radius: 6px; font-size: 0.9rem; font-weight: 700; }
+        .btn-del { flex: 1; padding: 8px; background: #ff4757; color: #fff; border-radius: 6px; font-size: 0.9rem; font-weight: 700; }
+
+        /* 공지 리스트 스타일 */
+        .notice-list { display: flex; flex-direction: column; gap: 15px; }
+        .notice-item { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: flex-start; }
+        .notice-content { flex-grow: 1; margin-right: 20px; white-space: pre-wrap; }
+        .notice-buttons { margin-top: 10px; display: flex; gap: 10px; }
+        .notice-btn-preview { padding: 5px 12px; background: #eee; border-radius: 4px; font-size: 0.8rem; color: #555; }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 3000;
+            display: none; justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: #fff; width: 450px; padding: 30px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: left; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; }
+        .input-group input, .input-group textarea {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; outline: none;
+        }
+        .input-group textarea { resize: none; height: 80px; }
+        .btn-submit {
+            width: 100%; padding: 12px; background: #5865F2; color: #fff;
+            border-radius: 8px; font-weight: 700; margin-top: 10px;
+        }
+
+        /* 공지 버튼 설정 영역 */
+        .btn-config-area { margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 8px; }
+        .btn-row { display: flex; gap: 5px; margin-bottom: 5px; }
+        
+        .contact { min-height: 40vh; background: linear-gradient(180deg, #5865F2 0%, #050505 100%); color: #fff; text-align: center; padding: 80px 20px; margin-top: 60px; border-radius: 40px 40px 0 0; }
+        .contact h2 { font-size: 2rem; margin-bottom: 15px; font-weight: 800; }
+        .btn-large { padding: 15px 40px; background: #fff; color: #5865F2; border-radius: 50px; font-weight: 700; display: inline-block; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        footer { padding: 40px; font-size: 0.75rem; color: #666; text-align: center; background: #050505; }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
+<header>
+    <div class="logo-container" onclick="location.href='index.html'">
+        관리자 컨트롤 센터
+    </div>
+    <div class="header-right">
+        <span>ADMIN MODE</span>
+    </div>
+</header>
+
+<div class="content-container">
+    
+    <div id="dashboardView">
+        <h1 class="page-title">대시보드</h1>
+        <div class="dashboard-grid">
+            <div class="dash-card">
+                <div class="dash-card-bg" id="modelCardBg" style="background-image: url('');"></div>
+                <div class="dash-card-content">
+                    <button class="dash-btn" onclick="showModelManager()">모델 관리</button>
+                </div>
+            </div>
+            <div class="dash-card">
+                <div class="dash-card-bg" style="background: linear-gradient(45deg, #ff9f43, #ee5253);"></div>
+                <div class="dash-card-content">
+                    <button class="dash-btn" onclick="showNoticeManager()">공지 관리</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modelView" class="management-section">
+        <div class="section-header">
+            <h1 class="page-title" style="margin-bottom:0;">모델 관리</h1>
+            <div>
+                <button class="btn-text-back" onclick="showDashboard()">뒤로가기</button>
+                <button class="btn-text-add" onclick="openModelModal()">+ 모델 추가</button>
+            </div>
+        </div>
+        <div class="model-grid" id="modelGrid"></div>
+    </div>
+
+    <div id="noticeView" class="management-section">
+        <div class="section-header">
+            <h1 class="page-title" style="margin-bottom:0;">공지 관리</h1>
+            <div>
+                <button class="btn-text-back" onclick="showDashboard()">뒤로가기</button>
+                <button class="btn-text-add" onclick="openNoticeModal()">+ 공지 추가</button>
+            </div>
+        </div>
+        <div class="notice-list" id="noticeList"></div>
+    </div>
+
+</div>
+
+<div class="modal-overlay" id="modelModal">
+    <div class="modal-box">
+        <h2 class="modal-title" id="modelModalTitle">새 모델 추가</h2>
+        <input type="hidden" id="mOriginalName"> <div class="input-group">
+            <label>모델 이름</label>
+            <input type="text" id="mName" placeholder="예: 소방복장 세트">
+        </div>
+        <div class="input-group">
+            <label>모델 사진 링크</label>
+            <input type="text" id="mImage" placeholder="https://...">
+        </div>
+        <div class="input-group">
+            <label>모델 설명</label>
+            <textarea id="mDesc" placeholder="설명을 입력하세요"></textarea>
+        </div>
+        <div class="input-group">
+            <label>모델 세부정보 페이지 링크</label>
+            <input type="text" id="mDetail" placeholder="예: https://rocord.../detail/123">
+        </div>
+        <div class="input-group">
+            <label>다운로드 링크 (외부 URL)</label>
+            <input type="text" id="mLink" placeholder="예: https://drive.google.com/...">
+        </div>
+        <button class="btn-submit" onclick="submitModel()">확인</button>
+        <button onclick="closeModal('modelModal')" style="width:100%; margin-top:10px; color:#999; font-size:0.9rem;">취소</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="noticeModal">
+    <div class="modal-box">
+        <h2 class="modal-title" id="noticeModalTitle">공지사항 추가</h2>
+        <input type="hidden" id="nId"> <div class="input-group">
+            <label>공지 내용</label>
+            <textarea id="nContent" placeholder="공지할 내용을 입력하세요" style="height:120px;"></textarea>
+        </div>
+        <div class="input-group">
+            <label>버튼 설정 (최대 3개)</label>
+            <div id="btnConfigContainer" class="btn-config-area">
+                </div>
+            <button onclick="addBtnInput()" style="font-size:0.8rem; color:#5865F2; font-weight:700; margin-top:5px;">+ 버튼 추가</button>
+        </div>
+        <button class="btn-submit" onclick="submitNotice()">확인</button>
+        <button onclick="closeModal('noticeModal')" style="width:100%; margin-top:10px; color:#999; font-size:0.9rem;">취소</button>
+    </div>
+</div>
+
+<section class="contact">
+    <div class="section-inner">
+        <h2>지금 바로<br>Rocord에 합류하세요.</h2>
+        <a href="https://discord.gg/NC4DQ3Cet9" target="_blank" class="btn-large">디스코드 입장하기</a>
+    </div>
+</section>
+
+<footer>
+    © 2025-2026 Rocord Deploy. All Rights Reserved.
+</footer>
+
+<script>
+    const BACKEND_URL = 'https://rocorddev.pythonanywhere.com';
+    let adminToken = localStorage.getItem('admin_token');
+    let allModels = [];
+    let noticeBtnCount = 0;
+
+    window.onload = function() {
+        if (!adminToken) {
+            window.location.href = 'index.html';
+        } else {
+            // 초기 데이터 로드 (모델 배경용)
+            fetchModels(true); 
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }, 600);
+        }
+    };
+
+    // --- 화면 전환 로직 ---
+    function showDashboard() {
+        document.getElementById('dashboardView').style.display = 'block';
+        document.getElementById('modelView').style.display = 'none';
+        document.getElementById('noticeView').style.display = 'none';
+    }
+
+    function showModelManager() {
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('modelView').style.display = 'block';
+        document.getElementById('noticeView').style.display = 'none';
+        fetchModels();
+    }
+
+    function showNoticeManager() {
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('modelView').style.display = 'none';
+        document.getElementById('noticeView').style.display = 'block';
+        fetchNotices();
+    }
+
+    // --- 모델 관리 로직 ---
+    function fetchModels(onlyBg = false) {
+        fetch(`${BACKEND_URL}/api/models`)
+        .then(res => res.json())
+        .then(data => {
+            allModels = data;
+            // 최신 모델 이미지를 대시보드 배경으로
+            if(data.length > 0) {
+                const lastModel = data[data.length - 1];
+                document.getElementById('modelCardBg').style.backgroundImage = `url('${lastModel.image}')`;
+            }
+
+            if(!onlyBg) {
+                const grid = document.getElementById('modelGrid');
+                grid.innerHTML = '';
+                // 최신순으로 표시
+                [...data].reverse().forEach(model => {
+                    const card = document.createElement('div');
+                    card.className = 'model-card';
+                    card.innerHTML = `
+                        <img src="${model.image}" alt="${model.name}" class="model-img">
+                        <div class="model-info">
+                            <h3>${model.name}</h3>
+                            <p>${model.desc}</p>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="openModelModal('${model.name}')">수정</button>
+                            <button class="btn-del" onclick="deleteModel('${model.name}')">삭제</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        });
+    }
+
+    function openModelModal(modelName = null) {
+        if(!localStorage.getItem('admin_token')) { alert("로그인 만료"); location.href='index.html'; return; }
+        
+        const modal = document.getElementById('modelModal');
+        const title = document.getElementById('modelModalTitle');
+        const originalNameInput = document.getElementById('mOriginalName');
+
+        if(modelName) {
+            // 수정 모드
+            title.innerText = "모델 수정";
+            const model = allModels.find(m => m.name === modelName);
+            if(model) {
+                originalNameInput.value = model.name;
+                document.getElementById('mName').value = model.name;
+                document.getElementById('mImage').value = model.image;
+                document.getElementById('mDesc').value = model.desc;
+                document.getElementById('mDetail').value = model.detail_url || "";
+                document.getElementById('mLink').value = model.download_url || "";
+            }
+        } else {
+            // 추가 모드
+            title.innerText = "새 모델 추가";
+            originalNameInput.value = "";
+            document.getElementById('mName').value = "";
+            document.getElementById('mImage').value = "";
+            document.getElementById('mDesc').value = "";
+            document.getElementById('mDetail').value = "";
+            document.getElementById('mLink').value = "";
+        }
+        modal.style.display = 'flex';
+    }
+
+    function submitModel() {
+        const originalName = document.getElementById('mOriginalName').value;
+        const name = document.getElementById('mName').value;
+        const image = document.getElementById('mImage').value;
+        const desc = document.getElementById('mDesc').value;
+        const link = document.getElementById('mLink').value;
+        const detail = document.getElementById('mDetail').value;
+
+        if(!name || !image || !desc || !link) {
+            alert("필수 항목을 모두 입력해주세요.");
+            return;
+        }
+
+        const modelData = { name, image, desc, download_url: link, detail_url: detail };
+        const method = originalName ? 'PUT' : 'POST';
+        const bodyData = originalName 
+            ? { original_name: originalName, model: modelData }
+            : modelData;
+
+        fetch(`${BACKEND_URL}/api/models`, {
+            method: method,
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+            body: JSON.stringify(bodyData)
+        })
+        .then(res => {
+            if(res.ok) {
+                alert("처리되었습니다.");
+                closeModal('modelModal');
+                fetchModels(); 
+            } else {
+                alert("오류가 발생했습니다.");
+            }
+        })
+        .catch(err => alert("서버 오류: " + err));
+    }
+
+    function deleteModel(name) {
+        if(!confirm(`정말 '${name}' 모델을 삭제하시겠습니까?`)) return;
+
+        fetch(`${BACKEND_URL}/api/models`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+            body: JSON.stringify({ name: name })
+        })
+        .then(res => {
+            if(res.ok) {
+                alert("삭제되었습니다.");
+                fetchModels();
+            } else {
+                alert("삭제 실패");
+            }
+        });
+    }
+
+    // --- 공지 관리 로직 ---
+    function fetchNotices() {
+        fetch(`${BACKEND_URL}/api/notices`)
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('noticeList');
+            list.innerHTML = '';
+            data.forEach(n => {
+                const item = document.createElement('div');
+                item.className = 'notice-item';
+                
+                let btnsHtml = '';
+                if(n.buttons && n.buttons.length > 0) {
+                    btnsHtml = '<div class="notice-buttons">' + 
+                        n.buttons.map(b => `<span class="notice-btn-preview">[${b.text}]</span>`).join('') +
+                        '</div>';
+                }
+
+                item.innerHTML = `
+                    <div class="notice-content">
+                        <strong>#${n.id}</strong><br>${n.content}
+                        ${btnsHtml}
+                    </div>
+                    <div style="min-width:100px; text-align:right;">
+                        <button class="btn-edit" onclick='openNoticeModal(${JSON.stringify(n)})'>수정</button>
+                        <button class="btn-del" onclick="deleteNotice(${n.id})">삭제</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        });
+    }
+
+    function openNoticeModal(notice = null) {
+        const modal = document.getElementById('noticeModal');
+        const title = document.getElementById('noticeModalTitle');
+        const idInput = document.getElementById('nId');
+        const container = document.getElementById('btnConfigContainer');
+        container.innerHTML = '';
+        noticeBtnCount = 0;
+
+        if(notice) {
+            title.innerText = "공지 수정";
+            idInput.value = notice.id;
+            document.getElementById('nContent').value = notice.content;
+            if(notice.buttons) {
+                notice.buttons.forEach(b => addBtnInput(b.text, b.url));
+            }
+        } else {
+            title.innerText = "공지 추가";
+            idInput.value = "";
+            document.getElementById('nContent').value = "";
+        }
+        modal.style.display = 'flex';
+    }
+
+    function addBtnInput(text = '', url = '') {
+        if(noticeBtnCount >= 3) { alert("버튼은 최대 3개까지 가능합니다."); return; }
+        noticeBtnCount++;
+        const div = document.createElement('div');
+        div.className = 'btn-row';
+        div.id = `btnRow_${noticeBtnCount}`;
+        div.innerHTML = `
+            <input type="text" placeholder="버튼 텍스트" value="${text}" class="btn-text-in">
+            <input type="text" placeholder="링크 URL (새탭)" value="${url}" class="btn-url-in">
+            <button onclick="removeBtnInput(${noticeBtnCount})" style="color:red; font-weight:bold;">X</button>
+        `;
+        document.getElementById('btnConfigContainer').appendChild(div);
+    }
+
+    function removeBtnInput(id) {
+        document.getElementById(`btnRow_${id}`).remove();
+        noticeBtnCount--;
+    }
+
+    function submitNotice() {
+        const id = document.getElementById('nId').value;
+        const content = document.getElementById('nContent').value;
+        
+        const btnRows = document.querySelectorAll('.btn-row');
+        let buttons = [];
+        btnRows.forEach(row => {
+            const text = row.querySelector('.btn-text-in').value;
+            const url = row.querySelector('.btn-url-in').value;
+            if(text && url) buttons.push({ text, url });
+        });
+
+        if(!content) { alert("내용을 입력해주세요."); return; }
+
+        const method = id ? 'PUT' : 'POST';
+        const bodyData = { id, content, buttons };
+
+        fetch(`${BACKEND_URL}/api/notices`, {
+            method: method,
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+            body: JSON.stringify(bodyData)
+        })
+        .then(res => {
+            if(res.ok) {
+                alert("저장되었습니다.");
+                closeModal('noticeModal');
+                fetchNotices();
+            } else {
+                alert("실패했습니다.");
+            }
+        })
+        .catch(err => alert("오류: " + err));
+    }
+
+    function deleteNotice(id) {
+        if(!confirm("정말 삭제하시겠습니까?")) return;
+        fetch(`${BACKEND_URL}/api/notices`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+            body: JSON.stringify({ id: id })
+        })
+        .then(res => {
+            if(res.ok) { fetchNotices(); }
+            else { alert("삭제 실패"); }
+        });
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
