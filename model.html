@@ -46,7 +46,7 @@
 
         .user-dropdown { position: fixed; top: 60px; right: 40px; width: 340px; background: #fff; border-radius: 18px; box-shadow: 0 16px 48px rgba(0,0,0,0.2); padding: 0; display: none; flex-direction: column; border: 1px solid #eee; z-index: 1002; overflow: hidden; }
         .user-dropdown.active { display: flex; }
-        .dropdown-banner { height: 64px; background: linear-gradient(135deg, #5865F2, #7289DA); }
+        .dropdown-banner { height: 64px; background: #fff; border-bottom: 1px solid #f0f0f0; }
         .dropdown-profile-header { display: flex; align-items: flex-end; gap: 14px; padding: 0 20px 16px; margin-top: -28px; border-bottom: 1px solid #eee; }
         .dropdown-avatar-large { width: 64px; height: 64px; border-radius: 50%; background: #eee; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0; }
         .dropdown-text-info { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 4px; }
@@ -63,6 +63,23 @@
         .cart-btn:hover { background: #e0e0e0; }
         .logout-btn { width: 100%; padding: 8px; background: #ff4757; color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-align: center; display: flex; align-items: center; justify-content: center; }
         .logout-btn:hover { background: #e84118; }
+
+        .cart-badge { display: none; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; background: #5865F2; color: #fff; border-radius: 10px; font-size: 0.7rem; align-items: center; justify-content: center; font-weight: 800; }
+        .cart-modal { background: #fff; width: 420px; max-width: calc(100vw - 40px); max-height: 80vh; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; display: flex; flex-direction: column; }
+        .modal-overlay.show .cart-modal { transform: scale(1); }
+        .cart-items-list { overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .cart-empty { text-align: center; color: #888; padding: 40px 10px; font-size: 0.9rem; line-height: 1.8; }
+        .cart-item { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #eee; border-radius: 12px; }
+        .cart-item-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #f0f0f0; flex-shrink: 0; }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-name { font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .cart-item-actions { display: flex; align-items: center; gap: 6px; }
+        .cart-item-download, .cart-item-remove { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; transition: 0.2s; color: #333; }
+        .cart-item-download:hover { background: #e5e9ff; color: #5865F2; }
+        .cart-item-remove:hover { background: #ffe5e5; color: #ff4757; }
+        .cart-add-btn { width: 40px; height: 40px; border-radius: 12px; background: #fff; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; color: #555; }
+        .cart-add-btn:hover { border-color: #5865F2; color: #5865F2; }
+        .cart-add-btn.in-cart { background: #5865F2; border-color: #5865F2; color: #fff; }
 
         /* 모달 스타일 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
@@ -134,7 +151,9 @@
             transition: 0.3s; height: 100%; display: flex; flex-direction: column;
         }
         .model-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
-        .model-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 16px; margin-bottom: 15px; background: #f0f0f0; }
+        .model-img-wrap { position: relative; margin-bottom: 15px; }
+        .model-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 16px; background: #f0f0f0; display: block; margin-bottom: 0; }
+        .model-img-wrap .cart-add-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); }
         .model-info h3 { font-size: 1.2rem; margin-bottom: 8px; font-weight: 700; }
         .model-info p { font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.5; flex-grow: 1; }
         
@@ -292,7 +311,7 @@
         </div>
     </div>
     <div class="dropdown-actions">
-        <button class="cart-btn" onclick="alert('장바구니 기능은 추후 업데이트 예정입니다.')"><i data-lucide="shopping-cart" class="lucide-fill"></i>장바구니</button>
+        <button class="cart-btn" onclick="openCart()"><i data-lucide="shopping-cart" class="lucide-fill"></i>장바구니<span class="cart-badge">0</span></button>
         <button class="logout-btn" onclick="logout()"><i data-lucide="log-out" class="lucide-fill"></i>로그아웃</button>
     </div>
 </div>
@@ -619,6 +638,7 @@
     }
 </script>
 <script src="/model-list.js"></script>
+<script src="/cart.js"></script>
 
 </body>
 </html>

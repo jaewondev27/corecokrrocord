@@ -1,5 +1,5 @@
 (function () {
-  const MODELS_JSON_URL = "https://jaewondev27.github.io/rocord-models/models.json";
+  const MODELS_JSON_URL = "https://rocordstorage.corerepublix.co.kr/models.json";
   const PAGE_SIZE = 20;
   const CATEGORY = window.MODEL_CATEGORY || null; // null = show all categories
 
@@ -78,8 +78,15 @@
         detailBtnHtml = `<button class="btn-detail" disabled><i data-lucide="file-text" class="lucide-fill"></i> 세부페이지가 없습니다</button>`;
       }
 
+      const inCart = window.isInCart && window.isInCart(model.id);
+
       card.innerHTML = `
-        <img src="${model.image || "/widget-icon.png"}" alt="${model.name}" class="model-img">
+        <div class="model-img-wrap">
+          <img src="${model.image || "/widget-icon.png"}" alt="${model.name}" class="model-img">
+          <button class="cart-add-btn${inCart ? " in-cart" : ""}" data-model-id="${model.id}" onclick="addToCartFromCard(this, '${model.id}')" title="장바구니에 담기">
+            <i data-lucide="bookmark" class="lucide-fill"></i>
+          </button>
+        </div>
         <div class="model-info">
           <h3>${model.name}</h3>
           <p>${model.desc || ""}</p>
