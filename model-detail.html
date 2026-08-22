@@ -531,7 +531,8 @@
         let contentHtml = '설명이 없습니다.';
         if (model.content) {
             try {
-                const rawHtml = window.marked ? window.marked.parse(model.content) : escapeHtml(model.content);
+                const preprocessed = preprocessDiscordMarkdown(model.content);
+                const rawHtml = window.marked ? window.marked.parse(preprocessed, { breaks: true }) : escapeHtml(model.content);
                 contentHtml = window.DOMPurify ? window.DOMPurify.sanitize(rawHtml) : rawHtml;
             } catch (e) {
                 contentHtml = escapeHtml(model.content);
@@ -555,6 +556,15 @@
             </div>
         `;
         if (window.lucide) window.lucide.createIcons();
+    }
+
+    function preprocessDiscordMarkdown(text) {
+        // Discord lets **bold** span multiple lines/paragraphs, which strict
+        // CommonMark (marked) refuses to parse as emphasis, leaving literal
+        // asterisks. Convert those spans to real <strong> tags first.
+        return text.replace(/\*\*([\s\S]+?)\*\*/g, function (match, inner) {
+            return '<strong>' + inner + '</strong>';
+        });
     }
 
     function escapeHtml(str) {
