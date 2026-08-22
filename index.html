@@ -1192,11 +1192,9 @@
                     <div class="latest-card">
                         <a href="${model.detail_url}">
                             <img src="${imgSrc}" alt="${modelName}" class="latest-img">
-                            <div class="latest-info">
-                                <div class="latest-title">${modelName}</div>
-                            </div>
                         </a>
                         <div class="latest-info">
+                            <a href="${model.detail_url}" class="latest-title" style="display:block;">${modelName}</a>
                             <button class="latest-btn" onclick="checkLoginAndDownload(event, this, '${model.id}')">다운로드</button>
                         </div>
                     </div>
