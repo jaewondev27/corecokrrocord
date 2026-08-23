@@ -28,6 +28,28 @@
   let allModelsData = [];
   let filteredModelsData = [];
   let currentPage = 1;
+  let statsCache = null;
+
+  function fetchStats() {
+    if (statsCache) return Promise.resolve(statsCache);
+    return fetch("https://dl.corerepublix.co.kr/api/stats")
+      .then((res) => res.json())
+      .then((data) => {
+        statsCache = data;
+        return data;
+      })
+      .catch(() => ({}));
+  }
+
+  function applyStatsToGrid() {
+    fetchStats().then((stats) => {
+      document.querySelectorAll("[data-stats-for]").forEach((el) => {
+        const id = el.getAttribute("data-stats-for");
+        const s = stats[id] || { views: 0, downloads: 0 };
+        el.textContent = `조회 ${s.views.toLocaleString()}회 · 다운로드 ${s.downloads.toLocaleString()}회`;
+      });
+    });
+  }
 
   window.allModelsData = allModelsData;
 
@@ -75,6 +97,7 @@
     const pageItems = filteredModelsData.slice(start, start + PAGE_SIZE);
     renderModels(pageItems);
     renderPagination(totalPages);
+    applyStatsToGrid();
   }
 
   function renderModels(models) {
@@ -114,6 +137,7 @@
         </div>
         <div class="model-info">
           <h3>${escapeHtml(model.name)}</h3>
+          <p class="model-stats" data-stats-for="${escapeHtml(model.id)}">조회 -회 · 다운로드 -회</p>
           <p>${escapeHtml(model.desc || "")}</p>
         </div>
         ${detailBtnHtml}
