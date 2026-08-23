@@ -350,10 +350,17 @@
     function maybeTrackView() {
         if (viewTracked || !currentModel || !currentUserToken) return;
         viewTracked = true;
-        fetch(`https://dl.corerepublix.co.kr/api/track/view?id=${encodeURIComponent(currentModel.id)}`, {
+        const modelId = currentModel.id;
+        fetch(`https://dl.corerepublix.co.kr/api/track/view?id=${encodeURIComponent(modelId)}`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${currentUserToken}` },
-        }).catch(() => {});
+        })
+            // Refresh the displayed count only after the view has actually
+            // been recorded, so this visitor's own view is reflected —
+            // fetching stats in parallel with the track call could read the
+            // pre-increment count and look like nothing happened.
+            .then(() => loadStats(modelId))
+            .catch(() => {});
     }
 
     (function checkLoginImmediately() {
