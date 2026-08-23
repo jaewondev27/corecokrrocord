@@ -293,6 +293,12 @@
     const BACKEND_URL = 'https://rocorddev.pythonanywhere.com';
     let adminToken = localStorage.getItem('admin_token');
     let allModels = [];
+
+    function escapeHtml(str) {
+        return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => (
+            { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+        ));
+    }
     let noticeBtnCount = 0;
 
     window.onload = function() {
@@ -347,15 +353,16 @@
                 [...data].reverse().forEach(model => {
                     const card = document.createElement('div');
                     card.className = 'model-card';
+                    const safeName = model.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                     card.innerHTML = `
-                        <img src="${model.image}" alt="${model.name}" class="model-img">
+                        <img src="${escapeHtml(model.image)}" alt="${escapeHtml(model.name)}" class="model-img">
                         <div class="model-info">
-                            <h3>${model.name}</h3>
-                            <p>${model.desc}</p>
+                            <h3>${escapeHtml(model.name)}</h3>
+                            <p>${escapeHtml(model.desc)}</p>
                         </div>
                         <div class="action-btns">
-                            <button class="btn-edit" onclick="openModelModal('${model.name}')">수정</button>
-                            <button class="btn-del" onclick="deleteModel('${model.name}')">삭제</button>
+                            <button class="btn-edit" onclick="openModelModal('${safeName}')">수정</button>
+                            <button class="btn-del" onclick="deleteModel('${safeName}')">삭제</button>
                         </div>
                     `;
                     grid.appendChild(card);

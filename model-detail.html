@@ -342,7 +342,7 @@
     const BACKEND_URL = 'https://rocorddev.pythonanywhere.com';
 
     let isLoggedIn = false;
-    let currentUserToken = null;
+    window.currentUserToken = null;
     let currentModel = null;
 
     (function checkLoginImmediately() {
@@ -527,7 +527,7 @@
 
     function renderModel(model) {
         const body = document.getElementById('detailBody');
-        const imgHtml = model.image ? `<img src="${model.image}" alt="${model.name}" class="detail-hero-img">` : '';
+        const imgHtml = model.image ? `<img src="${escapeHtml(model.image)}" alt="${escapeHtml(model.name)}" class="detail-hero-img">` : '';
         let contentHtml = '설명이 없습니다.';
         if (model.content) {
             try {
@@ -540,17 +540,19 @@
         }
         const updated = model.updated_at ? new Date(model.updated_at).toLocaleDateString('ko-KR') : '';
 
+        const safeId = encodeURIComponent(model.id);
+        const safeDiscordUrl = model.discord_url ? encodeURI(model.discord_url) : "#";
         body.innerHTML = `
             ${imgHtml}
-            <h1 class="detail-title">${model.name}</h1>
-            <p class="detail-meta">${updated ? '업데이트: ' + updated : ''}</p>
+            <h1 class="detail-title">${escapeHtml(model.name)}</h1>
+            <p class="detail-meta">${updated ? '업데이트: ' + escapeHtml(updated) : ''}</p>
             <div class="detail-content">${contentHtml}</div>
             <div class="detail-actions">
-                <button class="btn-download-lg" id="downloadBtn" onclick="downloadCurrentModel(this)" ${model.download_url ? '' : 'disabled'}>
-                    <i data-lucide="download" class="lucide-fill"></i>${model.download_url ? '다운로드' : '다운로드 파일 없음'}
+                <button class="btn-download-lg" id="downloadBtn" onclick="downloadCurrentModel(this)" ${(model.has_download || model.download_url) ? '' : 'disabled'}>
+                    <i data-lucide="download" class="lucide-fill"></i>${(model.has_download || model.download_url) ? '다운로드' : '다운로드 파일 없음'}
                 </button>
-                <a class="btn-discord-link" href="${model.discord_url}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="lucide-fill"></i>디스코드에서 보기</a>
-                <button class="cart-add-btn${window.isInCart && window.isInCart(model.id) ? " in-cart" : ""}" data-model-id="${model.id}" onclick="addToCartFromCard(this, '${model.id}')" title="장바구니에 담기">
+                <a class="btn-discord-link" href="${safeDiscordUrl}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="lucide-fill"></i>디스코드에서 보기</a>
+                <button class="cart-add-btn${window.isInCart && window.isInCart(model.id) ? " in-cart" : ""}" data-model-id="${escapeHtml(model.id)}" onclick="addToCartFromCard(this, '${safeId}')" title="장바구니에 담기">
                     <i data-lucide="shopping-cart" class="lucide-fill"></i>
                 </button>
             </div>
@@ -573,19 +575,46 @@
         return div.innerHTML;
     }
 
-    function downloadCurrentModel(btnElement) {
+    async function downloadCurrentModel(btnElement) {
         if (!isLoggedIn) {
             alert("🔒 로그인이 필요한 서비스입니다.");
             openLoginModal();
             return;
         }
-        if (!currentModel || !currentModel.download_url) {
+        if (!currentModel || (!currentModel.has_download && !currentModel.download_url)) {
             alert("다운로드 파일이 없습니다.");
             return;
         }
-        window.location.href = currentModel.download_url;
-        let countSpan = document.getElementById('downloadCount');
-        if(countSpan) countSpan.innerText = parseInt(countSpan.innerText) + 1;
+
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<span class="btn-loading-spinner"></span>';
+        btnElement.disabled = true;
+
+        try {
+            const url = await window.resolveDownloadUrl(currentModel, currentUserToken);
+            if (!url) {
+                alert("다운로드 파일이 없습니다.");
+                return;
+            }
+            const a = document.createElement('a');
+            a.href = url;
+            if (currentModel.download_name) a.download = currentModel.download_name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            let countSpan = document.getElementById('downloadCount');
+            if (countSpan) countSpan.innerText = parseInt(countSpan.innerText) + 1;
+        } catch (err) {
+            if (err && err.message === 'login_required') {
+                alert("🔒 로그인이 필요한 서비스입니다.");
+                openLoginModal();
+            } else {
+                alert("다운로드 중 오류가 발생했습니다.");
+            }
+        } finally {
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        }
     }
 
     function toggleChat() {

@@ -3,6 +3,13 @@
   const PAGE_SIZE = 20;
   const CATEGORY = window.MODEL_CATEGORY || null; // null = show all categories
 
+  function escapeHtml(str) {
+    return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+  window.escapeHtml = window.escapeHtml || escapeHtml;
+
   let allModelsData = [];
   let filteredModelsData = [];
   let currentPage = 1;
@@ -69,9 +76,12 @@
       const card = document.createElement("div");
       card.className = "model-card";
 
+      const safeId = encodeURIComponent(model.id);
+      const safeDetailUrl = model.detail_url ? encodeURI(model.detail_url) : "";
+
       let detailBtnHtml = "";
-      if (model.detail_url && model.detail_url.trim() !== "") {
-        detailBtnHtml = `<button class="btn-detail" onclick="window.location.href='${model.detail_url}'">
+      if (safeDetailUrl && safeDetailUrl.trim() !== "") {
+        detailBtnHtml = `<button class="btn-detail" onclick="window.location.href='${safeDetailUrl}'">
           <i data-lucide="file-text" class="lucide-fill"></i> 상세페이지
         </button>`;
       } else {
@@ -82,17 +92,17 @@
 
       card.innerHTML = `
         <div class="model-img-wrap">
-          <img src="${model.image || "/widget-icon.png"}" alt="${model.name}" class="model-img">
-          <button class="cart-add-btn${inCart ? " in-cart" : ""}" data-model-id="${model.id}" onclick="addToCartFromCard(this, '${model.id}')" title="장바구니에 담기">
+          <img src="${escapeHtml(model.image || "/widget-icon.png")}" alt="${escapeHtml(model.name)}" class="model-img">
+          <button class="cart-add-btn${inCart ? " in-cart" : ""}" data-model-id="${escapeHtml(model.id)}" onclick="addToCartFromCard(this, '${safeId}')" title="장바구니에 담기">
             <i data-lucide="shopping-cart" class="lucide-fill"></i>
           </button>
         </div>
         <div class="model-info">
-          <h3>${model.name}</h3>
-          <p>${model.desc || ""}</p>
+          <h3>${escapeHtml(model.name)}</h3>
+          <p>${escapeHtml(model.desc || "")}</p>
         </div>
         ${detailBtnHtml}
-        <button class="btn-download" onclick="downloadModel(this, '${model.id}')">
+        <button class="btn-download" onclick="downloadModel(this, '${safeId}')">
           <i data-lucide="download" class="lucide-fill"></i> 다운로드
         </button>
       `;

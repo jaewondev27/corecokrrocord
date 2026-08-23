@@ -407,7 +407,14 @@
     const BACKEND_URL = 'https://rocorddev.pythonanywhere.com';
 
     let isLoggedIn = false;
-    let currentUserToken = null;
+
+    function escapeHtml(str) {
+        return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => (
+            { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+        ));
+    }
+
+    window.currentUserToken = null;
     let currentUserId = null; // 로그인한 유저의 Discord ID
     let currentRating = 0; 
     let isEditMode = false; // 수정 모드 여부
@@ -624,14 +631,14 @@
         container.innerHTML = `
             <div class="detail-view">
                 <div class="detail-image-section">
-                    <img src="${model.image}" alt="${model.name}" class="detail-main-img">
+                    <img src="${escapeHtml(model.image)}" alt="${escapeHtml(model.name)}" class="detail-main-img">
                 </div>
                 <div class="detail-info-section">
                     <div>
-                        <h1 class="detail-title">${model.name}</h1>
-                        <p class="detail-desc">${model.desc}</p>
+                        <h1 class="detail-title">${escapeHtml(model.name)}</h1>
+                        <p class="detail-desc">${escapeHtml(model.desc)}</p>
                     </div>
-                    <button class="btn-download-detail" onclick="downloadModel(this, '${model.name}')">다운로드</button>
+                    <button class="btn-download-detail" onclick="downloadModel(this, '${encodeURIComponent(model.name)}')">다운로드</button>
                 </div>
             </div>
             <div class="tos-container">

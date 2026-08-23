@@ -666,7 +666,14 @@
     const BACKEND_URL = 'https://rocorddev.pythonanywhere.com';
 
     let isLoggedIn = false;
-    let currentUserToken = null;
+
+    function escapeHtml(str) {
+        return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => (
+            { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+        ));
+    }
+
+    window.currentUserToken = null;
 
     window.onload = function() {
         if (window.lucide) window.lucide.createIcons();
@@ -885,10 +892,10 @@
 
                 const cardHtml = `
                     <div class="latest-card">
-                        <img src="${imgSrc}" alt="${modelName}" class="latest-img">
+                        <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(modelName)}" class="latest-img">
                         <div class="latest-info">
-                            <div class="latest-title">${modelName}</div>
-                            <button class="latest-btn" onclick="checkLoginAndDownload(event, this, '${modelName}')">다운로드</button>
+                            <div class="latest-title">${escapeHtml(modelName)}</div>
+                            <button class="latest-btn" onclick="checkLoginAndDownload(event, this, '${encodeURIComponent(modelName)}')">다운로드</button>
                         </div>
                     </div>
                 `;
