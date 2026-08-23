@@ -8,6 +8,24 @@
   }
   window.escapeHtml = window.escapeHtml || escapeHtml;
 
+  // Only http(s) and same-origin-relative URLs are ever safe to place in an
+  // href — encodeURI() alone does NOT block "javascript:..." since ':' is a
+  // reserved URI character it deliberately leaves untouched.
+  function safeUrl(u, fallback) {
+    fallback = fallback === undefined ? "#" : fallback;
+    if (!u) return fallback;
+    try {
+      const resolved = new URL(u, window.location.href);
+      if (resolved.protocol === "http:" || resolved.protocol === "https:") {
+        return resolved.href;
+      }
+    } catch (e) {
+      /* fall through to fallback */
+    }
+    return fallback;
+  }
+  window.safeUrl = window.safeUrl || safeUrl;
+
   function getCart() {
     try {
       return JSON.parse(localStorage.getItem(CART_KEY)) || [];
@@ -132,7 +150,7 @@
       list.innerHTML = cart
         .map((m) => {
           const safeId = encodeURIComponent(m.id);
-          const safeDetailUrl = m.detail_url ? encodeURI(m.detail_url) : "#";
+          const safeDetailUrl = safeUrl(m.detail_url);
           const available = Boolean(m.has_download || m.download_url);
           return `
         <div class="cart-item">

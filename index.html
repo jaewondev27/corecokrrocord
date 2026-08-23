@@ -948,7 +948,21 @@
             { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
         ));
     }
-    
+
+    function safeUrl(u, fallback) {
+        fallback = fallback === undefined ? "#" : fallback;
+        if (!u) return fallback;
+        try {
+            const resolved = new URL(u, window.location.href);
+            if (resolved.protocol === "http:" || resolved.protocol === "https:") {
+                return resolved.href;
+            }
+        } catch (e) {
+            /* fall through to fallback */
+        }
+        return fallback;
+    }
+
     let slideInterval;
     let currentSlideIndex = 0;
     const slideDuration = 4000;
@@ -1207,7 +1221,7 @@
                 const modelName = model.name;
                 const inCart = window.isInCart && window.isInCart(model.id);
                 const safeId = encodeURIComponent(model.id);
-                const safeDetailUrl = model.detail_url ? encodeURI(model.detail_url) : "#";
+                const safeDetailUrl = safeUrl(model.detail_url);
                 const cardHtml = `
                     <div class="latest-card">
                         <div class="model-img-wrap">
@@ -1247,7 +1261,7 @@
         container.innerHTML = '';
         systems.forEach(model => {
             const safeId = encodeURIComponent(model.id);
-            const safeDetailUrl = model.detail_url ? encodeURI(model.detail_url) : "#";
+            const safeDetailUrl = safeUrl(model.detail_url);
             const imgSrc = model.image || '/widget-icon.png';
             const cardHtml = `
                 <div class="system-card">

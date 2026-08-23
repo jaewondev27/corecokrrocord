@@ -10,6 +10,21 @@
   }
   window.escapeHtml = window.escapeHtml || escapeHtml;
 
+  function safeUrl(u, fallback) {
+    fallback = fallback === undefined ? "#" : fallback;
+    if (!u) return fallback;
+    try {
+      const resolved = new URL(u, window.location.href);
+      if (resolved.protocol === "http:" || resolved.protocol === "https:") {
+        return resolved.href;
+      }
+    } catch (e) {
+      /* fall through to fallback */
+    }
+    return fallback;
+  }
+  window.safeUrl = window.safeUrl || safeUrl;
+
   let allModelsData = [];
   let filteredModelsData = [];
   let currentPage = 1;
@@ -77,7 +92,7 @@
       card.className = "model-card";
 
       const safeId = encodeURIComponent(model.id);
-      const safeDetailUrl = model.detail_url ? encodeURI(model.detail_url) : "";
+      const safeDetailUrl = model.detail_url ? safeUrl(model.detail_url, "") : "";
 
       let detailBtnHtml = "";
       if (safeDetailUrl && safeDetailUrl.trim() !== "") {

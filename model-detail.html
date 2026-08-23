@@ -522,9 +522,17 @@
         let contentHtml = '설명이 없습니다.';
         if (model.content) {
             try {
-                const preprocessed = preprocessDiscordMarkdown(model.content);
-                const rawHtml = window.marked ? window.marked.parse(preprocessed, { breaks: true }) : escapeHtml(model.content);
-                contentHtml = window.DOMPurify ? window.DOMPurify.sanitize(rawHtml) : rawHtml;
+                if (window.marked && window.DOMPurify) {
+                    const preprocessed = preprocessDiscordMarkdown(model.content);
+                    const rawHtml = window.marked.parse(preprocessed, { breaks: true });
+                    contentHtml = window.DOMPurify.sanitize(rawHtml);
+                } else {
+                    // Without DOMPurify there is no safe way to trust marked's
+                    // HTML output (model.content ultimately comes from a
+                    // Discord forum post, i.e. untrusted input) — fail closed
+                    // to escaped plain text rather than risk unsanitized HTML.
+                    contentHtml = escapeHtml(model.content);
+                }
             } catch (e) {
                 contentHtml = escapeHtml(model.content);
             }
@@ -532,7 +540,7 @@
         const updated = model.updated_at ? new Date(model.updated_at).toLocaleDateString('ko-KR') : '';
 
         const safeId = encodeURIComponent(model.id);
-        const safeDiscordUrl = model.discord_url ? encodeURI(model.discord_url) : "#";
+        const safeDiscordUrl = safeUrl(model.discord_url);
         body.innerHTML = `
             ${imgHtml}
             <h1 class="detail-title">${escapeHtml(model.name)}</h1>
@@ -564,6 +572,20 @@
         const div = document.createElement('div');
         div.innerText = str;
         return div.innerHTML;
+    }
+
+    function safeUrl(u, fallback) {
+        fallback = fallback === undefined ? "#" : fallback;
+        if (!u) return fallback;
+        try {
+            const resolved = new URL(u, window.location.href);
+            if (resolved.protocol === "http:" || resolved.protocol === "https:") {
+                return resolved.href;
+            }
+        } catch (e) {
+            /* fall through to fallback */
+        }
+        return fallback;
     }
 
     async function downloadCurrentModel(btnElement) {
