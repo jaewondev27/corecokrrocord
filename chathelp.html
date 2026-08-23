@@ -400,16 +400,6 @@
                 isGuest = true;
             }
 
-            const hash = window.location.hash.substring(1);
-            const paramsHash = new URLSearchParams(hash);
-            const accessToken = paramsHash.get('access_token');
-            if (window.opener) {
-                if (accessToken) { window.opener.handleLoginSuccess(accessToken); window.close(); }
-            } else if (accessToken) {
-                window.location.hash = '';
-                handleLoginSuccess(accessToken);
-            }
-            
             updateSettingsUI();
             if(isAdmin) loadAdminStatus();
             if(window.innerWidth >= 768 || document.getElementById('tab-chat').classList.contains('active')) {
@@ -419,17 +409,17 @@
         };
 
         function openDiscordLogin() {
-            const loginUrl = "https://discord.com/oauth2/authorize?client_id=1460856182716502036&response_type=token&redirect_uri=https%3A%2F%2Frocord.corerepublix.co.kr%2Fauth.html&scope=identify";
+            const loginUrl = "https://discord.com/oauth2/authorize?client_id=1460856182716502036&response_type=code&redirect_uri=https%3A%2F%2Frocord.corerepublix.co.kr%2Fauth.html&scope=identify";
             const w = 500, h = 800;
             const left = (window.screen.width/2)-(w/2), top = (window.screen.height/2)-(h/2);
             window.open(loginUrl, 'DiscordLogin', `width=${w},height=${h},top=${top},left=${left}`);
         }
 
-        window.handleLoginSuccess = function(token) {
-            localStorage.setItem('discord_token', token);
+        window.handleLoginSuccess = function(sessionToken) {
+            localStorage.setItem('discord_session', sessionToken);
             localStorage.setItem('isDiscordLoggedIn', 'true');
             document.getElementById('full-loader').style.display = 'flex';
-            fetchUserProfile(token).then(() => {
+            fetchUserProfile(sessionToken).then(() => {
                 document.getElementById('login-request-overlay').classList.remove('active');
                 document.getElementById('full-loader').style.display = 'none';
                 updateSettingsUI();
@@ -441,20 +431,16 @@
             });
         };
 
-        function fetchUserProfile(token) {
-            return fetch('https://discord.com/api/users/@me', { headers: { 'Authorization': `Bearer ${token}` } })
+        function fetchUserProfile(sessionToken) {
+            return fetch('https://dl.corerepublix.co.kr/api/session', { headers: { 'Authorization': `Bearer ${sessionToken}` } })
             .then(res => res.json())
-            .then(data => {
-                if(data.id) {
+            .then(resp => {
+                const data = resp.user;
+                if(data && data.id) {
                     localStorage.setItem('discord_user', JSON.stringify(data));
                     currentSessionId = data.id;
                     isGuest = false;
                     localStorage.removeItem('guest_id');
-                    fetch(`${API_BASE}/api/login`, {
-                        method: 'POST',
-                        headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify({access_token: token})
-                    });
                 }
             }).catch(err => console.error(err));
         }

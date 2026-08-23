@@ -677,15 +677,9 @@
 
     window.onload = function() {
         if (window.lucide) window.lucide.createIcons();
-        const fragment = new URLSearchParams(window.location.hash.slice(1));
-        const accessToken = fragment.get('access_token');
-        const storedToken = localStorage.getItem('discord_token');
+        const storedToken = localStorage.getItem('discord_session');
 
-        if (accessToken) {
-            localStorage.setItem('discord_token', accessToken);
-            window.history.replaceState({}, document.title, window.location.pathname);
-            loginToBackend(accessToken);
-        } else if (storedToken) {
+        if (storedToken) {
             loginToBackend(storedToken);
         }
 
@@ -772,15 +766,15 @@
     }
 
     function loginToBackend(token) {
-        fetch('https://discord.com/api/users/@me', {
+        fetch('https://dl.corerepublix.co.kr/api/session', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
         .then(data => {
-            if(data.error) throw new Error(data.error);
+            if(data.error || !data.user) throw new Error(data.error || 'invalid_session');
             currentUserToken = token;
             isLoggedIn = true;
-            updateUI(data);
+            updateUI(data.user);
             closeLoginModal();
         })
         .catch(error => {
@@ -821,12 +815,12 @@
 
     function loginWithDiscord() {
         sessionStorage.setItem('post_login_redirect', window.location.pathname);
-        const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify`;
+        const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
         window.location.href = oauthUrl;
     }
 
     function logout() {
-        localStorage.removeItem('discord_token');
+        localStorage.removeItem('discord_session');
         isLoggedIn = false;
         currentUserToken = null;
         location.reload();

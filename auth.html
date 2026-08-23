@@ -40,39 +40,65 @@
 
 <script>
     (function () {
-        var fragment = new URLSearchParams(window.location.hash.slice(1));
-        var accessToken = fragment.get('access_token');
-        var errorParam = fragment.get('error') || new URLSearchParams(window.location.search).get('error');
+        var AUTH_WORKER_URL = 'https://dl.corerepublix.co.kr/api/auth/callback';
 
-        // 문의(챗) 위젯은 팝업 창으로 로그인을 띄웁니다. 그 경우 원래 창(opener)에
-        // 토큰을 바로 전달하고 이 팝업은 닫습니다.
-        if (window.opener) {
-            if (accessToken && typeof window.opener.handleLoginSuccess === 'function') {
-                window.opener.handleLoginSuccess(accessToken);
+        var params = new URLSearchParams(window.location.search);
+        var code = params.get('code');
+        var errorParam = params.get('error');
+        var isPopup = Boolean(window.opener);
+
+        function finish(sessionToken) {
+            if (isPopup) {
+                if (sessionToken && typeof window.opener.handleLoginSuccess === 'function') {
+                    window.opener.handleLoginSuccess(sessionToken);
+                }
+                window.close();
+                return;
             }
-            window.close();
-            return;
-        }
 
-        var redirectTarget = sessionStorage.getItem('post_login_redirect') || '/';
-        sessionStorage.removeItem('post_login_redirect');
+            var redirectTarget = sessionStorage.getItem('post_login_redirect') || '/';
+            sessionStorage.removeItem('post_login_redirect');
+            // Only allow same-origin relative paths, to avoid open-redirect issues
+            if (!redirectTarget.startsWith('/')) {
+                redirectTarget = '/';
+            }
 
-        // Only allow same-origin relative paths, to avoid open-redirect issues
-        if (!redirectTarget.startsWith('/')) {
-            redirectTarget = '/';
-        }
-
-        if (accessToken) {
-            localStorage.setItem('discord_token', accessToken);
+            if (sessionToken) {
+                localStorage.setItem('discord_session', sessionToken);
+            }
             window.location.replace(redirectTarget);
+        }
+
+        if (code) {
+            // Authorization Code flow: the raw Discord token exchange happens
+            // server-side (the Worker holds the Discord Client Secret). The
+            // browser only ever receives our own short-lived session token.
+            fetch(AUTH_WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: code,
+                    redirect_uri: window.location.origin + window.location.pathname,
+                }),
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (data.session_token) {
+                        finish(data.session_token);
+                    } else {
+                        document.getElementById('statusText').innerText = '로그인에 실패했습니다. 잠시 후 이동합니다...';
+                        setTimeout(function () { finish(null); }, 1500);
+                    }
+                })
+                .catch(function () {
+                    document.getElementById('statusText').innerText = '로그인 중 오류가 발생했습니다. 잠시 후 이동합니다...';
+                    setTimeout(function () { finish(null); }, 1500);
+                });
         } else if (errorParam) {
             document.getElementById('statusText').innerText = '로그인이 취소되었습니다. 잠시 후 이동합니다...';
-            setTimeout(function () {
-                window.location.replace(redirectTarget);
-            }, 1500);
+            setTimeout(function () { finish(null); }, 1500);
         } else {
-            // No token in URL - nothing to do, just go back
-            window.location.replace(redirectTarget);
+            finish(null);
         }
     })();
 </script>

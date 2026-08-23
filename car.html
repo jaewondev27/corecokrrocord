@@ -426,24 +426,8 @@
 
     // 즉시 실행 함수: URL이나 저장소에서 토큰 확인 및 자동 로그인 (페이지 로드 즉시 실행)
     (function checkLoginImmediately() {
-        const urlHash = window.location.hash.substring(1);
-        const urlParams = new URLSearchParams(urlHash);
-        const accessTokenInUrl = urlParams.get('access_token');
-        const storedToken = localStorage.getItem('discord_token');
-        
-        // 1. 디스코드 로그인 후 리다이렉트 된 경우 (URL에 토큰 존재)
-        if (accessTokenInUrl) {
-            document.getElementById('redirectOverlay').classList.add('active'); // 로딩 화면 즉시 표시
-            localStorage.setItem('discord_token', accessTokenInUrl); // 토큰 저장
-            
-            // URL 정리 (토큰 정보 숨김)
-            history.replaceState(null, null, window.location.pathname);
-            
-            // 로그인 처리 시작
-            loginToBackend(accessTokenInUrl);
-        }
-        // 2. 이미 로그인 된 경우 (저장된 토큰 존재)
-        else if (storedToken) {
+        const storedToken = localStorage.getItem('discord_session');
+        if (storedToken) {
             document.getElementById('redirectOverlay').classList.add('active'); // 로딩 화면 즉시 표시
             loginToBackend(storedToken);
         }
@@ -483,20 +467,20 @@
     function loginToBackend(token) {
         document.getElementById('redirectOverlay').classList.add('active');
 
-        fetch('https://discord.com/api/users/@me', {
+        fetch('https://dl.corerepublix.co.kr/api/session', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
         .then(data => {
-            if(data.error) throw new Error(data.error);
+            if(data.error || !data.user) throw new Error(data.error || "invalid_session");
             currentUserToken = token;
             isLoggedIn = true;
-            updateUI(data);
+            updateUI(data.user);
             closeLoginModal();
         })
         .catch(err => {
             console.error(err);
-            localStorage.removeItem('discord_token'); // 유효하지 않은 토큰 삭제
+            localStorage.removeItem('discord_session'); // 유효하지 않은 토큰 삭제
         })
         .finally(() => {
             // 통신 완료 후 로딩 오버레이 제거
@@ -576,12 +560,12 @@
         sessionStorage.setItem('post_login_redirect', window.location.pathname);
         const currentRedirectUri = window.location.origin + '/auth.html';
 
-        const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(currentRedirectUri)}&response_type=token&scope=identify`;
+        const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(currentRedirectUri)}&response_type=code&scope=identify`;
         window.location.href = oauthUrl;
     }
 
     function logout() {
-        localStorage.removeItem('discord_token');
+        localStorage.removeItem('discord_session');
         isLoggedIn = false;
         currentUserToken = null;
         location.reload();
