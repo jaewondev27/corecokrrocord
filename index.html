@@ -317,10 +317,11 @@
         .btn-inner-spinner {
             width: 14px;
             height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
+            border: 2px solid transparent;
+            border-top: 2px solid #fff;
+            border-right: 2px solid #fff;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.7s linear infinite;
         }
 
         .mobile-login-btn {
@@ -521,7 +522,7 @@
         .latest-btn { width: 100%; padding: 10px; background: #f0f0f0; color: #333; border-radius: 8px; font-weight: 700; font-size: 0.9rem; text-align: center; transition: 0.2s; }
         .latest-btn:hover { background: #e0e0e0; }
 
-        .btn-loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
+        .btn-loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid transparent; border-top: 2px solid #fff; border-right: 2px solid #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .contact { min-height: 40vh; background: linear-gradient(180deg, #5865F2 0%, #050505 100%); color: #fff; text-align: center; padding: 80px 20px; margin-top: 40px; border-radius: 40px 40px 0 0; }
