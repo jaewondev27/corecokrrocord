@@ -136,6 +136,8 @@
     .badge-status-pending { background: #fff8e6; color: #c98a00; }
     .badge-status-approved { background: #eafaf0; color: #1a9c50; }
     .badge-status-denied { background: #fdecec; color: #e0303f; }
+    .badge-status-issued { background: #eafaf0; color: #1a9c50; }
+    .badge-status-revoked { background: #f2f2f2; color: #888; }
     .already-certified-tag { font-size: 0.7rem; color: #e0303f; font-weight: 700; margin-left: 6px; }
 
     .spinner { width: 34px; height: 34px; border: 4px solid transparent; border-top: 4px solid #5865F2; border-right: 4px solid #5865F2; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 30px auto; }
@@ -285,7 +287,7 @@
         <section class="permit-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
                 <h3 style="margin-bottom:0;">내 신청 내역</h3>
-                <button class="refresh-btn" id="refreshAppsBtn" onclick="loadMyApplications()" title="새로고침">
+                <button class="refresh-btn" id="refreshAppsBtn" onclick="refreshApplications()" title="새로고침">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><polyline points="21 3 21 9 15 9"></polyline></svg>
                 </button>
             </div>
@@ -512,13 +514,25 @@
         }
     }
 
-    function statusBadge(status) {
+    function statusBadge(app) {
+        // /applications/mine의 status는 신청 처리 시점의 결과가 그대로 저장된 값이라,
+        // 관리자가 나중에 허가증을 삭제/취소해도 "승인"으로 그대로 남는다.
+        // 그래서 approved 건은 /my-eligible-guilds의 실시간 already_certified와
+        // 대조해서, 지금도 실제로 발급된 상태인지를 기준으로 배지를 다시 계산한다.
+        if (app.status === 'approved') {
+            var certified = state.eligibleGuilds.find(function (g) { return g.id === app.server_id; });
+            if (certified) {
+                return certified.already_certified
+                    ? el('span', 'badge badge-status-issued', '🪪 발급된 서버')
+                    : el('span', 'badge badge-status-revoked', '⚠️ 허가증 취소됨');
+            }
+            return el('span', 'badge badge-status-approved', '✅ 승인');
+        }
         var map = {
             pending: ['badge-status-pending', '⏳ 대기중'],
-            approved: ['badge-status-approved', '✅ 승인'],
             denied: ['badge-status-denied', '❌ 거부']
         };
-        var info = map[status] || ['badge', status];
+        var info = map[app.status] || ['badge', app.status];
         return el('span', 'badge ' + info[0], info[1]);
     }
 
@@ -558,7 +572,7 @@
 
             var badges = el('div', 'app-badges');
             badges.appendChild(roleBadge(app.applicant_role));
-            badges.appendChild(statusBadge(app.status));
+            badges.appendChild(statusBadge(app));
             item.appendChild(badges);
 
             list.appendChild(item);
@@ -566,8 +580,6 @@
     }
 
     async function loadMyApplications() {
-        var btn = document.getElementById('refreshAppsBtn');
-        btn.classList.add('spinning');
         try {
             var data = await apiFetch('/applications/mine');
             renderApplications(data.applications);
@@ -576,11 +588,21 @@
             var list = document.getElementById('applicationsList');
             clearChildren(list);
             list.appendChild(el('div', 'app-empty', '신청 내역을 불러오지 못했습니다.'));
+        }
+    }
+
+    async function refreshApplications() {
+        var btn = document.getElementById('refreshAppsBtn');
+        btn.classList.add('spinning');
+        try {
+            // 발급 취소 여부를 최신 상태로 반영하려면 eligibleGuilds부터 다시 받아와야 함
+            await loadEligibleGuilds();
+            await loadMyApplications();
         } finally {
             btn.classList.remove('spinning');
         }
     }
-    window.loadMyApplications = loadMyApplications;
+    window.refreshApplications = refreshApplications;
 
     function showFormBanner(type, message) {
         var banner = document.getElementById('formBanner');
@@ -618,7 +640,8 @@
             });
             showFormBanner('success', '신청이 접수되었습니다. (신청 번호 #' + data.application_id + ') 관리 서버의 검토를 기다려주세요.');
             document.getElementById('applyForm').reset();
-            await Promise.all([loadEligibleGuilds(), loadMyApplications()]);
+            await loadEligibleGuilds();
+            await loadMyApplications();
         } catch (e) {
             if (e && e.status === 401) {
                 // showLoginGate already handled by apiFetch
@@ -640,7 +663,9 @@
         try {
             var me = await apiFetch('/me');
             renderProfile(me);
-            await Promise.all([loadEligibleGuilds(), loadMyApplications()]);
+            // applications 배지가 eligibleGuilds의 실시간 발급 상태를 참조하므로 순서대로 로드
+            await loadEligibleGuilds();
+            await loadMyApplications();
         } catch (e) {
             // 401은 apiFetch가 이미 showLoginGate 처리함
         }
