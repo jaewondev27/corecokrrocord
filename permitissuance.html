@@ -39,7 +39,25 @@
     .login-trigger-btn:hover { background: #333; transform: translateY(-2px); }
     .profile-name { display: inline-block; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
     .user-avatar { width: 24px; height: 24px; border-radius: 50%; display: none; }
-    .btn-inner-spinner { width: 14px; height: 14px; border: 2px solid transparent; border-top: 2px solid #fff; border-right: 2px solid #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+    /* 구글식 로딩 스피너 (원호 길이가 늘었다 줄었다 하며 회전) */
+    .gmspinner { display: block; animation: gmspinner-rotate 1.7s linear infinite; }
+    .gmspinner-circle { fill: none; stroke: #5865F2; stroke-width: 5; stroke-linecap: round; animation: gmspinner-dash 1.4s ease-in-out infinite; }
+    .gmspinner-white .gmspinner-circle { stroke: #fff; }
+    .gmspinner-lg { width: 52px; height: 52px; }
+    .gmspinner-sm { width: 22px; height: 22px; }
+    .gmspinner-xs { width: 15px; height: 15px; }
+    @keyframes gmspinner-rotate { 100% { transform: rotate(360deg); } }
+    @keyframes gmspinner-dash {
+        0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
+        50% { stroke-dasharray: 90, 200; stroke-dashoffset: -35px; }
+        100% { stroke-dasharray: 90, 200; stroke-dashoffset: -124px; }
+    }
+
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.97); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+    .loading-overlay p { font-weight: 700; color: #666; font-size: 0.9rem; }
+    .inline-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 30px 10px; color: #999; font-size: 0.88rem; }
+    .field-loading { display: none; align-items: center; margin-left: 8px; vertical-align: middle; }
 
     .hamburger-btn { display: none; width: 24px; height: 24px; position: relative; z-index: 1100; }
     .hamburger-btn span { display: block; width: 100%; height: 2px; background: #1a1a1a; position: absolute; left: 0; transition: 0.3s; }
@@ -122,7 +140,7 @@
     .refresh-btn.spinning svg { animation: spin 0.7s linear infinite; }
 
     .applications-list { display: flex; flex-direction: column; gap: 12px; }
-    .app-empty, .app-loading { text-align: center; color: #999; font-size: 0.88rem; padding: 30px 10px; }
+    .app-empty { text-align: center; color: #999; font-size: 0.88rem; padding: 30px 10px; }
     .app-item { border: 1px solid #eee; border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
     .app-item .app-main { flex: 1; min-width: 160px; }
     .app-item .app-server-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
@@ -140,7 +158,6 @@
     .badge-status-revoked { background: #f2f2f2; color: #888; }
     .already-certified-tag { font-size: 0.7rem; color: #e0303f; font-weight: 700; margin-left: 6px; }
 
-    .spinner { width: 34px; height: 34px; border: 4px solid transparent; border-top: 4px solid #5865F2; border-right: 4px solid #5865F2; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 30px auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     @media (max-width: 768px) {
@@ -169,6 +186,11 @@
 </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="initialLoadOverlay">
+    <svg class="gmspinner gmspinner-lg" viewBox="0 0 50 50"><circle class="gmspinner-circle" cx="25" cy="25" r="20"></circle></svg>
+    <p>로그인 정보를 확인하는 중입니다...</p>
+</div>
 
 <header>
     <div class="logo-container" onclick="location.href='index.html'">
@@ -261,14 +283,20 @@
             <h3>신청서 작성</h3>
             <form id="applyForm">
                 <div class="input-group">
-                    <label for="managementGuildSelect">신청서를 받을 관리 서버</label>
+                    <label for="managementGuildSelect">
+                        신청서를 받을 관리 서버
+                        <span class="field-loading" id="mgFieldLoading"><svg class="gmspinner gmspinner-xs" viewBox="0 0 50 50"><circle class="gmspinner-circle" cx="25" cy="25" r="20"></circle></svg></span>
+                    </label>
                     <select id="managementGuildSelect" required>
                         <option value="">불러오는 중...</option>
                     </select>
                     <div class="field-hint">허가증 발급 신청을 검토·승인할 관리 서버입니다.</div>
                 </div>
                 <div class="input-group">
-                    <label for="subjectGuildSelect">허가증을 발급받을 서버</label>
+                    <label for="subjectGuildSelect">
+                        허가증을 발급받을 서버
+                        <span class="field-loading" id="subjFieldLoading"><svg class="gmspinner gmspinner-xs" viewBox="0 0 50 50"><circle class="gmspinner-circle" cx="25" cy="25" r="20"></circle></svg></span>
+                    </label>
                     <select id="subjectGuildSelect" required>
                         <option value="">불러오는 중...</option>
                     </select>
@@ -292,7 +320,10 @@
                 </button>
             </div>
             <div id="applicationsList" class="applications-list">
-                <div class="app-loading">불러오는 중...</div>
+                <div class="inline-loading">
+                    <svg class="gmspinner gmspinner-sm" viewBox="0 0 50 50"><circle class="gmspinner-circle" cx="25" cy="25" r="20"></circle></svg>
+                    <span>불러오는 중...</span>
+                </div>
             </div>
         </section>
     </div>
@@ -351,6 +382,29 @@
         return e;
     }
 
+    // 구글식(원호 늘었다 줄었다) 로딩 스피너 - 정적 마크업만 담으므로 innerHTML로 삽입해도 안전
+    function spinnerHTML(sizeClass) {
+        return '<svg class="gmspinner ' + sizeClass + '" viewBox="0 0 50 50"><circle class="gmspinner-circle" cx="25" cy="25" r="20"></circle></svg>';
+    }
+
+    function setInlineLoading(container, text) {
+        clearChildren(container);
+        var wrap = el('div', 'inline-loading');
+        wrap.innerHTML = spinnerHTML('gmspinner-sm');
+        wrap.appendChild(el('span', null, text || '불러오는 중...'));
+        container.appendChild(wrap);
+    }
+
+    function setFieldLoading(id, loading) {
+        var span = document.getElementById(id);
+        if (span) span.style.display = loading ? 'inline-flex' : 'none';
+    }
+
+    function hideInitialOverlay() {
+        var overlay = document.getElementById('initialLoadOverlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
     async function apiFetch(path, options) {
         options = options || {};
         var headers = Object.assign({}, options.headers || {});
@@ -406,6 +460,7 @@
     window.logoutKukomi = logoutKukomi;
 
     function showLoginGate(message) {
+        hideInitialOverlay();
         document.getElementById('loginGate').style.display = 'block';
         document.getElementById('appContent').style.display = 'none';
         if (message) document.getElementById('gateMessage').textContent = message;
@@ -419,6 +474,7 @@
         state.me = me;
         var avatarUrl = safeUrl(me.avatar_url) || 'https://cdn.discordapp.com/embed/avatars/0.png';
 
+        hideInitialOverlay();
         document.getElementById('loginGate').style.display = 'none';
         document.getElementById('appContent').style.display = 'block';
 
@@ -490,6 +546,7 @@
     }
 
     async function loadManagementGuilds() {
+        setFieldLoading('mgFieldLoading', true);
         try {
             var data = await apiFetch('/management-guilds');
             populateManagementGuilds(data.guilds);
@@ -498,10 +555,13 @@
             clearChildren(select);
             select.appendChild(el('option', null, '불러오기 실패 - 새로고침해주세요'));
             select.disabled = true;
+        } finally {
+            setFieldLoading('mgFieldLoading', false);
         }
     }
 
     async function loadEligibleGuilds() {
+        setFieldLoading('subjFieldLoading', true);
         try {
             var data = await apiFetch('/my-eligible-guilds');
             populateEligibleGuilds(data.guilds);
@@ -511,6 +571,8 @@
             clearChildren(select);
             select.appendChild(el('option', null, '불러오기 실패 - 새로고침해주세요'));
             select.disabled = true;
+        } finally {
+            setFieldLoading('subjFieldLoading', false);
         }
     }
 
@@ -580,12 +642,13 @@
     }
 
     async function loadMyApplications() {
+        var list = document.getElementById('applicationsList');
+        setInlineLoading(list, '신청 내역을 불러오는 중...');
         try {
             var data = await apiFetch('/applications/mine');
             renderApplications(data.applications);
         } catch (e) {
             if (e && e.status === 401) return;
-            var list = document.getElementById('applicationsList');
             clearChildren(list);
             list.appendChild(el('div', 'app-empty', '신청 내역을 불러오지 못했습니다.'));
         }
@@ -631,7 +694,7 @@
         var submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         var originalHtml = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<span class="btn-inner-spinner"></span>';
+        submitBtn.innerHTML = spinnerHTML('gmspinner-xs gmspinner-white');
 
         try {
             var data = await apiFetch('/applications', {
@@ -667,7 +730,11 @@
             await loadEligibleGuilds();
             await loadMyApplications();
         } catch (e) {
-            // 401은 apiFetch가 이미 showLoginGate 처리함
+            // 401은 apiFetch가 이미 showLoginGate 처리함. 그 외(네트워크 오류 등)는
+            // 초기 로딩 오버레이가 계속 떠 있지 않도록 여기서 게이트로 내려준다.
+            if (!e || e.status !== 401) {
+                showLoginGate('로그인 정보를 불러오지 못했습니다. 다시 시도해주세요.');
+            }
         }
     }
 
