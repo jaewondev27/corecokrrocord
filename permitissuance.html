@@ -141,15 +141,19 @@
         position: absolute; top: calc(100% + 8px); left: 0; right: 0;
         background: #fff; border: 1px solid #eee; border-radius: 18px;
         box-shadow: 0 16px 40px rgba(0,0,0,0.12); padding: 14px;
-        z-index: 60; display: none; max-height: 360px; overflow-y: auto;
+        z-index: 60; max-height: 360px; overflow-y: auto; overflow-x: hidden;
+        opacity: 0; visibility: hidden; transform: translateY(-6px); pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
     }
-    .guild-dropdown.open .guild-dropdown-panel { display: block; }
+    .guild-dropdown.open .guild-dropdown-panel { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
 
-    .guild-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    /* 카드 그리드: fr 트랙이 내용(긴 서버명 등) 때문에 넓어지지 않도록 minmax(0, 1fr)로 강제해
+       패널이 좌우로 스크롤되는 일 없이, 카드 폭에 맞춰 이름이 줄바꿈되게 한다 */
+    .guild-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
     .guild-card {
         display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px;
         padding: 14px 8px; border: 2px solid #eee; border-radius: 14px; background: #f9f9f9;
-        cursor: pointer; transition: 0.2s;
+        cursor: pointer; transition: 0.2s; min-width: 0;
     }
     .guild-card:hover:not(.disabled) { border-color: #5865F2; background: #fff; transform: translateY(-2px); }
     .guild-card.selected { border-color: #5865F2; background: #eef0ff; }
@@ -161,7 +165,8 @@
     }
     .guild-card-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .guild-card-name {
-        font-size: 0.8rem; font-weight: 700; line-height: 1.3; word-break: keep-all;
+        width: 100%; font-size: 0.8rem; font-weight: 700; line-height: 1.3;
+        word-break: keep-all; overflow-wrap: anywhere;
         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .guild-card-badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
@@ -212,10 +217,27 @@
         .content-container { padding: 30px 16px 80px; }
         .page-title { font-size: 1.6rem; }
         .app-item { flex-direction: column; align-items: flex-start; }
+
+        /* 모바일: 드롭다운이 트리거 아래가 아니라 화면 아래에서 시트로 올라옴.
+           배경을 어둡게 하는 딤 오버레이는 의도적으로 넣지 않음 - 시트 바깥을 눌러도
+           그대로 보이고 클릭하면 기존 document 클릭 리스너가 닫아준다. */
+        .guild-dropdown-panel {
+            position: fixed; left: 0; right: 0; bottom: 0; top: auto;
+            border-radius: 20px 20px 0 0;
+            max-height: 75vh;
+            transform: translateY(100%);
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+            padding: 24px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        }
+        .guild-dropdown-panel::before {
+            content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 4px; border-radius: 4px; background: #ddd;
+        }
+        .guild-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
     @media (max-width: 420px) {
-        .guild-card-grid { grid-template-columns: repeat(2, 1fr); }
+        .guild-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     footer.cx-footer { padding: 2.5rem 1.5rem 4rem; background: #fff; border-top: 1px solid rgba(0, 0, 0, 0.08); font-family: "Google Sans Flex", -apple-system, "Noto Sans KR", sans-serif; text-align: left; }
@@ -362,7 +384,7 @@
                             <div class="guild-card-grid" id="subjCardGrid"></div>
                         </div>
                     </div>
-                    <div class="field-hint">본인이 오너이거나 관리자 권한을 가진 서버만 표시됩니다.</div>
+                    <div class="field-hint">본인이 오너이거나 관리자 권한을 가진 서버만 표시됩니다. 발급 여부는 위에서 고른 관리 서버 기준입니다.</div>
                 </div>
 
                 <div id="formBanner" class="form-banner"></div>
@@ -419,7 +441,10 @@
         token: null,
         me: null,
         managementGuilds: [],
-        eligibleGuilds: []
+        eligibleGuilds: [],
+        // 허가증은 관리 서버(DB)마다 완전히 독립적이라, already_certified는
+        // management_guild_id별로 따로 캐시해서 써야 한다 (PUBLIC_API.md §5).
+        eligibleGuildsCache: {}
     };
 
     function getToken() { return localStorage.getItem(TOKEN_KEY); }
@@ -651,6 +676,17 @@
 
         closeDropdown(type);
         renderGuildGrid(type, type === 'management' ? state.managementGuilds : state.eligibleGuilds);
+
+        // 허가증은 관리 서버마다 완전히 독립적이라, 관리 서버를 바꾸면
+        // "허가증을 받을 서버" 선택과 발급 여부를 그 관리 서버 기준으로 다시 불러와야 한다.
+        if (type === 'management') {
+            document.getElementById('subjectGuildSelect').value = '';
+            if (getToken()) {
+                loadEligibleGuilds(guild.id);
+            } else {
+                setTriggerPlaceholder('subject', '서버를 선택하세요');
+            }
+        }
     }
 
     function resetGuildSelection(type) {
@@ -681,33 +717,28 @@
             trigger.disabled = true;
             setTriggerPlaceholder('management', '신청 가능한 관리 서버가 없습니다');
             renderGuildGrid('management', []);
+            setTriggerPlaceholder('subject', '먼저 관리 서버를 선택하세요');
+            document.getElementById('subjTrigger').disabled = true;
             return;
         }
         trigger.disabled = false;
-        if (!document.getElementById('managementGuildSelect').value) {
-            setTriggerPlaceholder('management', '서버를 선택하세요');
-        }
         renderGuildGrid('management', guilds);
+        // 관리 서버가 보통 하나뿐이라 기본으로 첫 번째를 선택해둔다 (PUBLIC_API.md §7 예시와 동일한 흐름)
+        selectGuild('management', guilds[0]);
     }
 
     function populateEligibleGuilds(guilds) {
         state.eligibleGuilds = guilds || [];
         var trigger = document.getElementById('subjTrigger');
-        var hidden = document.getElementById('subjectGuildSelect');
 
         if (!guilds || guilds.length === 0) {
             trigger.disabled = true;
-            hidden.value = '';
             setTriggerPlaceholder('subject', '오너/관리자 권한을 가진 서버가 없습니다');
             renderGuildGrid('subject', []);
             return;
         }
         trigger.disabled = false;
-        var stillValid = guilds.some(function (g) { return g.id === hidden.value && !g.already_certified; });
-        if (!stillValid) {
-            hidden.value = '';
-            setTriggerPlaceholder('subject', '서버를 선택하세요');
-        }
+        setTriggerPlaceholder('subject', '서버를 선택하세요');
         renderGuildGrid('subject', guilds);
     }
 
@@ -724,18 +755,44 @@
         }
     }
 
-    async function loadEligibleGuilds() {
+    // already_certified는 관리 서버(management_guild_id)마다 완전히 독립적이라
+    // 반드시 그 파라미터를 붙여서 불러와야 한다 (안 붙이면 항상 null로 옴).
+    async function loadEligibleGuilds(managementGuildId) {
+        var trigger = document.getElementById('subjTrigger');
+
+        if (!managementGuildId) {
+            trigger.disabled = true;
+            state.eligibleGuilds = [];
+            setTriggerPlaceholder('subject', '먼저 관리 서버를 선택하세요');
+            renderGuildGrid('subject', []);
+            return;
+        }
+
+        trigger.disabled = true;
+        setTriggerPlaceholder('subject', '불러오는 중...');
         setFieldLoading('subjFieldLoading', true);
         try {
-            var data = await apiFetch('/my-eligible-guilds');
+            var data = await apiFetch('/my-eligible-guilds?management_guild_id=' + encodeURIComponent(managementGuildId));
+            state.eligibleGuildsCache[managementGuildId] = data.guilds || [];
             populateEligibleGuilds(data.guilds);
         } catch (e) {
             if (e && e.status === 401) return;
-            document.getElementById('subjTrigger').disabled = true;
-            setTriggerPlaceholder('subject', '불러오기 실패 - 새로고침해주세요');
+            trigger.disabled = true;
+            setTriggerPlaceholder('subject', '불러오기 실패 - 다시 시도해주세요');
         } finally {
             setFieldLoading('subjFieldLoading', false);
         }
+    }
+
+    async function ensureEligibleGuildsCached(managementGuildId) {
+        if (state.eligibleGuildsCache[managementGuildId]) return state.eligibleGuildsCache[managementGuildId];
+        try {
+            var data = await apiFetch('/my-eligible-guilds?management_guild_id=' + encodeURIComponent(managementGuildId));
+            state.eligibleGuildsCache[managementGuildId] = data.guilds || [];
+        } catch (e) {
+            state.eligibleGuildsCache[managementGuildId] = null;
+        }
+        return state.eligibleGuildsCache[managementGuildId];
     }
 
     function statusBadge(app) {
@@ -743,8 +800,11 @@
         // 관리자가 나중에 허가증을 삭제/취소해도 "승인"으로 그대로 남는다.
         // 그래서 approved 건은 /my-eligible-guilds의 실시간 already_certified와
         // 대조해서, 지금도 실제로 발급된 상태인지를 기준으로 배지를 다시 계산한다.
+        // already_certified는 management_guild_id별로 독립적이라, 그 신청 건의
+        // management_guild_id로 캐시해둔 목록을 찾아서 대조해야 한다.
         if (app.status === 'approved') {
-            var certified = state.eligibleGuilds.find(function (g) { return g.id === app.server_id; });
+            var guilds = state.eligibleGuildsCache[app.management_guild_id];
+            var certified = guilds ? guilds.find(function (g) { return g.id === app.server_id; }) : null;
             if (certified) {
                 return certified.already_certified
                     ? el('span', 'badge badge-status-issued', '🪪 발급된 서버')
@@ -808,6 +868,15 @@
         setInlineLoading(list, '신청 내역을 불러오는 중...');
         try {
             var data = await apiFetch('/applications/mine');
+            // 승인된 신청 건들의 실시간 발급 상태 배지를 그리려면, 그 신청이 걸린
+            // management_guild_id 기준으로 already_certified를 미리 받아둬야 한다.
+            var approvedMgmtIds = [];
+            (data.applications || []).forEach(function (app) {
+                if (app.status === 'approved' && approvedMgmtIds.indexOf(app.management_guild_id) === -1) {
+                    approvedMgmtIds.push(app.management_guild_id);
+                }
+            });
+            await Promise.all(approvedMgmtIds.map(ensureEligibleGuildsCached));
             renderApplications(data.applications);
         } catch (e) {
             if (e && e.status === 401) return;
@@ -820,8 +889,10 @@
         var btn = document.getElementById('refreshAppsBtn');
         btn.classList.add('spinning');
         try {
-            // 발급 취소 여부를 최신 상태로 반영하려면 eligibleGuilds부터 다시 받아와야 함
-            await loadEligibleGuilds();
+            // 발급 취소 여부를 최신 상태로 다시 확인하기 위해 캐시를 비우고 다시 받아온다
+            state.eligibleGuildsCache = {};
+            var currentMgmtId = document.getElementById('managementGuildSelect').value;
+            if (currentMgmtId) await loadEligibleGuilds(currentMgmtId);
             await loadMyApplications();
         } finally {
             btn.classList.remove('spinning');
@@ -864,9 +935,9 @@
                 body: JSON.stringify({ management_guild_id: managementGuildId, subject_guild_id: subjectGuildId })
             });
             showFormBanner('success', '신청이 접수되었습니다. (신청 번호 #' + data.application_id + ') 관리 서버의 검토를 기다려주세요.');
-            resetGuildSelection('management');
+            // 관리 서버 선택은 유지 (같은 관리 서버로 다른 서버를 이어서 신청하는 경우가 많음)
             resetGuildSelection('subject');
-            await loadEligibleGuilds();
+            await loadEligibleGuilds(managementGuildId);
             await loadMyApplications();
         } catch (e) {
             if (e && e.status === 401) {
@@ -889,8 +960,8 @@
         try {
             var me = await apiFetch('/me');
             renderProfile(me);
-            // applications 배지가 eligibleGuilds의 실시간 발급 상태를 참조하므로 순서대로 로드
-            await loadEligibleGuilds();
+            // "허가증을 받을 서버" 목록은 관리 서버 선택에 딸려 자동으로 불러와지므로
+            // (populateManagementGuilds → selectGuild → loadEligibleGuilds) 여기서는 신청 내역만 로드
             await loadMyApplications();
         } catch (e) {
             // 401은 apiFetch가 이미 showLoginGate 처리함. 그 외(네트워크 오류 등)는
