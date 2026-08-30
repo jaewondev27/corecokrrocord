@@ -194,6 +194,17 @@
     .refresh-btn.spinning svg { animation: spin 0.7s linear infinite; }
 
     .applications-list { display: flex; flex-direction: column; gap: 12px; }
+    .applications-pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+    .page-btn {
+        min-width: 38px; height: 38px; padding: 0 10px; border-radius: 10px; border: 2px solid #eee;
+        background: #f9f9f9; font-weight: 700; color: #555; transition: 0.2s; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-family: 'Daeojamjil', sans-serif; font-size: 0.9rem;
+    }
+    .page-btn:hover:not(:disabled) { border-color: #5865F2; color: #5865F2; }
+    .page-btn.active { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-chevron { width: 16px; height: 16px; }
     .app-empty { text-align: center; color: #999; font-size: 0.88rem; padding: 30px 10px; }
     .app-item { border: 1px solid #eee; border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
     .app-item .app-main { flex: 1; min-width: 160px; }
@@ -422,6 +433,7 @@
                     <span>불러오는 중...</span>
                 </div>
             </div>
+            <div id="appsPagination" class="applications-pagination"></div>
         </section>
     </div>
 </div>
@@ -457,8 +469,11 @@
         eligibleGuilds: [],
         // 허가증은 관리 서버(DB)마다 완전히 독립적이라, already_certified는
         // management_guild_id별로 따로 캐시해서 써야 한다 (PUBLIC_API.md §5).
-        eligibleGuildsCache: {}
+        eligibleGuildsCache: {},
+        applications: [],
+        appsCurrentPage: 1
     };
+    var APPS_PAGE_SIZE = 5;
 
     function getToken() { return localStorage.getItem(TOKEN_KEY); }
     function setToken(t) { localStorage.setItem(TOKEN_KEY, t); state.token = t; }
@@ -851,15 +866,30 @@
     }
 
     function renderApplications(applications) {
+        state.applications = applications || [];
+        state.appsCurrentPage = 1;
+        renderApplicationsPage();
+    }
+
+    function renderApplicationsPage() {
         var list = document.getElementById('applicationsList');
         clearChildren(list);
 
+        var applications = state.applications;
         if (!applications || applications.length === 0) {
             list.appendChild(el('div', 'app-empty', '아직 제출한 신청 내역이 없습니다.'));
+            renderApplicationsPagination(0);
             return;
         }
 
-        applications.forEach(function (app) {
+        var totalPages = Math.ceil(applications.length / APPS_PAGE_SIZE);
+        if (state.appsCurrentPage > totalPages) state.appsCurrentPage = totalPages;
+        if (state.appsCurrentPage < 1) state.appsCurrentPage = 1;
+
+        var start = (state.appsCurrentPage - 1) * APPS_PAGE_SIZE;
+        var pageItems = applications.slice(start, start + APPS_PAGE_SIZE);
+
+        pageItems.forEach(function (app) {
             var item = el('div', 'app-item');
 
             var main = el('div', 'app-main');
@@ -874,11 +904,56 @@
 
             list.appendChild(item);
         });
+
+        renderApplicationsPagination(totalPages);
+    }
+
+    function renderApplicationsPagination(totalPages) {
+        var container = document.getElementById('appsPagination');
+        clearChildren(container);
+        if (totalPages <= 1) return;
+
+        var current = state.appsCurrentPage;
+
+        function pageBtn(innerHtml, page, opts) {
+            opts = opts || {};
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'page-btn' + (opts.active ? ' active' : '');
+            btn.innerHTML = innerHtml; // 정적 SVG/숫자만 들어가므로 안전
+            if (opts.disabled) {
+                btn.disabled = true;
+            } else {
+                btn.addEventListener('click', function () {
+                    state.appsCurrentPage = page;
+                    renderApplicationsPage();
+                    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
+            }
+            return btn;
+        }
+
+        var chevronLeft = '<svg class="page-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+        var chevronRight = '<svg class="page-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
+        container.appendChild(pageBtn(chevronLeft, current - 1, { disabled: current === 1 }));
+
+        var windowSize = 5;
+        var startPage = Math.max(1, current - Math.floor(windowSize / 2));
+        var endPage = Math.min(totalPages, startPage + windowSize - 1);
+        startPage = Math.max(1, endPage - windowSize + 1);
+
+        for (var p = startPage; p <= endPage; p++) {
+            container.appendChild(pageBtn(String(p), p, { active: p === current }));
+        }
+
+        container.appendChild(pageBtn(chevronRight, current + 1, { disabled: current === totalPages }));
     }
 
     async function loadMyApplications() {
         var list = document.getElementById('applicationsList');
         setInlineLoading(list, '신청 내역을 불러오는 중...');
+        clearChildren(document.getElementById('appsPagination'));
         try {
             var data = await apiFetch('/applications/mine');
             // 승인된 신청 건들의 실시간 발급 상태 배지를 그리려면, 그 신청이 걸린
