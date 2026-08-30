@@ -115,16 +115,58 @@
 
     .input-group { margin-bottom: 18px; }
     .input-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #555; margin-bottom: 8px; }
-    .input-group select {
-        width: 100%; padding: 13px 15px; border: 2px solid #eee; border-radius: 12px;
-        font-size: 0.95rem; outline: none; transition: 0.3s; background: #f9f9f9; color: #1a1a1a;
-        appearance: none; -webkit-appearance: none;
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-        background-repeat: no-repeat; background-position: right 15px center; background-size: 15px; padding-right: 40px;
-        font-family: 'Daeojamjil', sans-serif;
-    }
-    .input-group select:focus { border-color: #5865F2; background-color: #fff; }
     .input-group .field-hint { font-size: 0.78rem; color: #999; margin-top: 6px; }
+
+    /* 커스텀 서버 선택 드롭다운 */
+    .guild-dropdown { position: relative; }
+    .guild-dropdown-trigger {
+        width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+        border: 2px solid #eee; border-radius: 12px; background: #f9f9f9; cursor: pointer; transition: 0.2s;
+        font-family: 'Daeojamjil', sans-serif; font-size: 0.95rem; color: #1a1a1a; text-align: left;
+    }
+    .guild-dropdown-trigger:hover:not(:disabled) { border-color: #ddd; }
+    .guild-dropdown-trigger:disabled { cursor: not-allowed; opacity: 0.6; }
+    .guild-dropdown.open .guild-dropdown-trigger { border-color: #5865F2; background: #fff; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.1); }
+    .guild-dropdown-trigger .trigger-icon {
+        width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; background: #5865F2; color: #fff;
+        display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; overflow: hidden;
+    }
+    .guild-dropdown-trigger .trigger-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .guild-dropdown-trigger .trigger-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+    .guild-dropdown-trigger .trigger-label.placeholder { color: #999; font-weight: 500; }
+    .guild-dropdown-trigger .trigger-chevron { width: 17px; height: 17px; color: #999; transition: transform 0.25s; flex-shrink: 0; }
+    .guild-dropdown.open .trigger-chevron { transform: rotate(180deg); }
+
+    .guild-dropdown-panel {
+        position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+        background: #fff; border: 1px solid #eee; border-radius: 18px;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.12); padding: 14px;
+        z-index: 60; display: none; max-height: 360px; overflow-y: auto;
+    }
+    .guild-dropdown.open .guild-dropdown-panel { display: block; }
+
+    .guild-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .guild-card {
+        display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px;
+        padding: 14px 8px; border: 2px solid #eee; border-radius: 14px; background: #f9f9f9;
+        cursor: pointer; transition: 0.2s;
+    }
+    .guild-card:hover:not(.disabled) { border-color: #5865F2; background: #fff; transform: translateY(-2px); }
+    .guild-card.selected { border-color: #5865F2; background: #eef0ff; }
+    .guild-card.disabled { opacity: 0.5; cursor: not-allowed; }
+    .guild-card-avatar {
+        width: 44px; height: 44px; border-radius: 50%; background: #5865F2; color: #fff;
+        display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem;
+        overflow: hidden; flex-shrink: 0;
+    }
+    .guild-card-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .guild-card-name {
+        font-size: 0.8rem; font-weight: 700; line-height: 1.3; word-break: keep-all;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .guild-card-badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+    .guild-card-badges .badge { padding: 3px 8px; font-size: 0.65rem; }
+    .guild-card-empty { grid-column: 1 / -1; text-align: center; color: #999; font-size: 0.85rem; padding: 20px; }
 
     .form-banner { padding: 12px 16px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; margin-bottom: 18px; display: none; }
     .form-banner.error { display: block; background: #fff0f0; color: #d63447; border: 1px solid #ffd6d6; }
@@ -170,6 +212,10 @@
         .content-container { padding: 30px 16px 80px; }
         .page-title { font-size: 1.6rem; }
         .app-item { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (max-width: 420px) {
+        .guild-card-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     footer.cx-footer { padding: 2.5rem 1.5rem 4rem; background: #fff; border-top: 1px solid rgba(0, 0, 0, 0.08); font-family: "Google Sans Flex", -apple-system, "Noto Sans KR", sans-serif; text-align: left; }
@@ -283,23 +329,39 @@
             <h3>신청서 작성</h3>
             <form id="applyForm">
                 <div class="input-group">
-                    <label for="managementGuildSelect">
+                    <label for="mgTrigger">
                         신청서를 받을 관리 서버
                         <span class="field-loading" id="mgFieldLoading"><svg class="gmspinner gmspinner-xs" viewBox="0 0 50 50"><circle class="gmspinner-circle" cx="25" cy="25" r="20"></circle></svg></span>
                     </label>
-                    <select id="managementGuildSelect" required>
-                        <option value="">불러오는 중...</option>
-                    </select>
+                    <input type="hidden" id="managementGuildSelect">
+                    <div class="guild-dropdown" id="mgDropdown">
+                        <button type="button" class="guild-dropdown-trigger" id="mgTrigger" onclick="toggleDropdown('management')" disabled>
+                            <span class="trigger-icon" id="mgTriggerIcon">?</span>
+                            <span class="trigger-label placeholder" id="mgTriggerLabel">불러오는 중...</span>
+                            <svg class="trigger-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="guild-dropdown-panel" id="mgPanel">
+                            <div class="guild-card-grid" id="mgCardGrid"></div>
+                        </div>
+                    </div>
                     <div class="field-hint">허가증 발급 신청을 검토·승인할 관리 서버입니다.</div>
                 </div>
                 <div class="input-group">
-                    <label for="subjectGuildSelect">
+                    <label for="subjTrigger">
                         허가증을 발급받을 서버
                         <span class="field-loading" id="subjFieldLoading"><svg class="gmspinner gmspinner-xs" viewBox="0 0 50 50"><circle class="gmspinner-circle" cx="25" cy="25" r="20"></circle></svg></span>
                     </label>
-                    <select id="subjectGuildSelect" required>
-                        <option value="">불러오는 중...</option>
-                    </select>
+                    <input type="hidden" id="subjectGuildSelect">
+                    <div class="guild-dropdown" id="subjDropdown">
+                        <button type="button" class="guild-dropdown-trigger" id="subjTrigger" onclick="toggleDropdown('subject')" disabled>
+                            <span class="trigger-icon" id="subjTriggerIcon">?</span>
+                            <span class="trigger-label placeholder" id="subjTriggerLabel">불러오는 중...</span>
+                            <svg class="trigger-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="guild-dropdown-panel" id="subjPanel">
+                            <div class="guild-card-grid" id="subjCardGrid"></div>
+                        </div>
+                    </div>
                     <div class="field-hint">본인이 오너이거나 관리자 권한을 가진 서버만 표시됩니다.</div>
                 </div>
 
@@ -494,55 +556,159 @@
         if (window.lucide) window.lucide.createIcons();
     }
 
-    function guildOptionLabel(g) {
-        var label = g.name;
-        if (g.role === 'owner') label += ' (👑 오너)';
-        else if (g.role === 'admin') label += ' (🛡️ 관리자)';
-        if (g.already_certified) label += ' - 이미 발급됨';
-        return label;
+    // --- 커스텀 서버 선택 드롭다운 (카드 그리드, 한 줄에 3개) ---
+
+    var AVATAR_COLORS = ['#5865F2', '#eb459e', '#57f287', '#ed4245', '#3ba55d', '#faa61a', '#9b59b6'];
+
+    function guildInitial(name) {
+        var trimmed = (name || '').trim();
+        return trimmed ? trimmed.charAt(0).toUpperCase() : '?';
+    }
+
+    function avatarColor(seed) {
+        var sum = 0;
+        for (var i = 0; i < (seed || '').length; i++) sum += seed.charCodeAt(i);
+        return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+    }
+
+    function setAvatarEl(iconEl, guild) {
+        clearChildren(iconEl);
+        var url = guild ? safeUrl(guild.icon_url) : null;
+        if (guild && url) {
+            iconEl.style.background = 'transparent';
+            var img = document.createElement('img');
+            img.src = url;
+            img.alt = '';
+            iconEl.appendChild(img);
+        } else if (guild) {
+            iconEl.style.background = avatarColor(guild.name || guild.id);
+            iconEl.textContent = guildInitial(guild.name);
+        } else {
+            iconEl.style.background = '#ccc';
+            iconEl.textContent = '?';
+        }
+    }
+
+    function triggerIds(type) {
+        return type === 'management'
+            ? { wrap: 'mgDropdown', trigger: 'mgTrigger', label: 'mgTriggerLabel', icon: 'mgTriggerIcon', grid: 'mgCardGrid', input: 'managementGuildSelect' }
+            : { wrap: 'subjDropdown', trigger: 'subjTrigger', label: 'subjTriggerLabel', icon: 'subjTriggerIcon', grid: 'subjCardGrid', input: 'subjectGuildSelect' };
+    }
+
+    function setTriggerPlaceholder(type, text) {
+        var ids = triggerIds(type);
+        var label = document.getElementById(ids.label);
+        label.textContent = text;
+        label.classList.add('placeholder');
+        setAvatarEl(document.getElementById(ids.icon), null);
+    }
+
+    function buildGuildCard(guild, type, selectedId) {
+        var disabled = type === 'subject' && guild.already_certified;
+        var card = el('div', 'guild-card' + (guild.id === selectedId ? ' selected' : '') + (disabled ? ' disabled' : ''));
+
+        var avatar = el('div', 'guild-card-avatar');
+        setAvatarEl(avatar, guild);
+        card.appendChild(avatar);
+        card.appendChild(el('div', 'guild-card-name', guild.name));
+
+        if (type === 'subject') {
+            var badges = el('div', 'guild-card-badges');
+            badges.appendChild(roleBadge(guild.role));
+            if (guild.already_certified) badges.appendChild(el('span', 'badge badge-status-issued', '발급됨'));
+            card.appendChild(badges);
+        }
+
+        if (!disabled) {
+            card.addEventListener('click', function () { selectGuild(type, guild); });
+        }
+        return card;
+    }
+
+    function renderGuildGrid(type, guilds) {
+        var ids = triggerIds(type);
+        var grid = document.getElementById(ids.grid);
+        clearChildren(grid);
+
+        if (!guilds || guilds.length === 0) {
+            var emptyText = type === 'management' ? '신청 가능한 관리 서버가 없습니다' : '오너/관리자 권한을 가진 서버가 없습니다';
+            grid.appendChild(el('div', 'guild-card-empty', emptyText));
+            return;
+        }
+
+        var selectedId = document.getElementById(ids.input).value;
+        guilds.forEach(function (g) { grid.appendChild(buildGuildCard(g, type, selectedId)); });
+    }
+
+    function selectGuild(type, guild) {
+        var ids = triggerIds(type);
+        document.getElementById(ids.input).value = guild.id;
+
+        var label = document.getElementById(ids.label);
+        label.textContent = guild.name;
+        label.classList.remove('placeholder');
+        setAvatarEl(document.getElementById(ids.icon), guild);
+
+        closeDropdown(type);
+        renderGuildGrid(type, type === 'management' ? state.managementGuilds : state.eligibleGuilds);
+    }
+
+    function resetGuildSelection(type) {
+        var ids = triggerIds(type);
+        document.getElementById(ids.input).value = '';
+        setTriggerPlaceholder(type, '서버를 선택하세요');
+        renderGuildGrid(type, type === 'management' ? state.managementGuilds : state.eligibleGuilds);
+    }
+
+    function toggleDropdown(type) {
+        var ids = triggerIds(type);
+        if (document.getElementById(ids.trigger).disabled) return;
+        var otherType = type === 'management' ? 'subject' : 'management';
+        closeDropdown(otherType);
+        document.getElementById(ids.wrap).classList.toggle('open');
+    }
+    window.toggleDropdown = toggleDropdown;
+
+    function closeDropdown(type) {
+        document.getElementById(triggerIds(type).wrap).classList.remove('open');
     }
 
     function populateManagementGuilds(guilds) {
         state.managementGuilds = guilds || [];
-        var select = document.getElementById('managementGuildSelect');
-        clearChildren(select);
+        var trigger = document.getElementById('mgTrigger');
 
         if (!guilds || guilds.length === 0) {
-            select.appendChild(el('option', null, '신청 가능한 관리 서버가 없습니다'));
-            select.disabled = true;
+            trigger.disabled = true;
+            setTriggerPlaceholder('management', '신청 가능한 관리 서버가 없습니다');
+            renderGuildGrid('management', []);
             return;
         }
-        select.disabled = false;
-        select.appendChild(el('option', null, '서버를 선택하세요'));
-        select.firstChild.value = '';
-        guilds.forEach(function (g) {
-            var opt = el('option', null, g.name);
-            opt.value = g.id;
-            select.appendChild(opt);
-        });
+        trigger.disabled = false;
+        if (!document.getElementById('managementGuildSelect').value) {
+            setTriggerPlaceholder('management', '서버를 선택하세요');
+        }
+        renderGuildGrid('management', guilds);
     }
 
     function populateEligibleGuilds(guilds) {
         state.eligibleGuilds = guilds || [];
-        var select = document.getElementById('subjectGuildSelect');
-        clearChildren(select);
+        var trigger = document.getElementById('subjTrigger');
+        var hidden = document.getElementById('subjectGuildSelect');
 
         if (!guilds || guilds.length === 0) {
-            select.appendChild(el('option', null, '오너/관리자 권한을 가진 서버가 없습니다'));
-            select.disabled = true;
+            trigger.disabled = true;
+            hidden.value = '';
+            setTriggerPlaceholder('subject', '오너/관리자 권한을 가진 서버가 없습니다');
+            renderGuildGrid('subject', []);
             return;
         }
-        select.disabled = false;
-        var placeholder = el('option', null, '서버를 선택하세요');
-        placeholder.value = '';
-        select.appendChild(placeholder);
-
-        guilds.forEach(function (g) {
-            var opt = el('option', null, guildOptionLabel(g));
-            opt.value = g.id;
-            if (g.already_certified) opt.disabled = true;
-            select.appendChild(opt);
-        });
+        trigger.disabled = false;
+        var stillValid = guilds.some(function (g) { return g.id === hidden.value && !g.already_certified; });
+        if (!stillValid) {
+            hidden.value = '';
+            setTriggerPlaceholder('subject', '서버를 선택하세요');
+        }
+        renderGuildGrid('subject', guilds);
     }
 
     async function loadManagementGuilds() {
@@ -551,10 +717,8 @@
             var data = await apiFetch('/management-guilds');
             populateManagementGuilds(data.guilds);
         } catch (e) {
-            var select = document.getElementById('managementGuildSelect');
-            clearChildren(select);
-            select.appendChild(el('option', null, '불러오기 실패 - 새로고침해주세요'));
-            select.disabled = true;
+            document.getElementById('mgTrigger').disabled = true;
+            setTriggerPlaceholder('management', '불러오기 실패 - 새로고침해주세요');
         } finally {
             setFieldLoading('mgFieldLoading', false);
         }
@@ -567,10 +731,8 @@
             populateEligibleGuilds(data.guilds);
         } catch (e) {
             if (e && e.status === 401) return;
-            var select = document.getElementById('subjectGuildSelect');
-            clearChildren(select);
-            select.appendChild(el('option', null, '불러오기 실패 - 새로고침해주세요'));
-            select.disabled = true;
+            document.getElementById('subjTrigger').disabled = true;
+            setTriggerPlaceholder('subject', '불러오기 실패 - 새로고침해주세요');
         } finally {
             setFieldLoading('subjFieldLoading', false);
         }
@@ -702,7 +864,8 @@
                 body: JSON.stringify({ management_guild_id: managementGuildId, subject_guild_id: subjectGuildId })
             });
             showFormBanner('success', '신청이 접수되었습니다. (신청 번호 #' + data.application_id + ') 관리 서버의 검토를 기다려주세요.');
-            document.getElementById('applyForm').reset();
+            resetGuildSelection('management');
+            resetGuildSelection('subject');
             await loadEligibleGuilds();
             await loadMyApplications();
         } catch (e) {
@@ -779,6 +942,11 @@
                 hamburger.classList.remove('active');
                 mobileMenu.classList.remove('active');
             }
+
+            var mgDropdown = document.getElementById('mgDropdown');
+            var subjDropdown = document.getElementById('subjDropdown');
+            if (!mgDropdown.contains(e.target)) mgDropdown.classList.remove('open');
+            if (!subjDropdown.contains(e.target)) subjDropdown.classList.remove('open');
         });
 
         loadManagementGuilds();
