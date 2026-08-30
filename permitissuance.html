@@ -116,6 +116,13 @@
     .input-group { margin-bottom: 18px; }
     .input-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #555; margin-bottom: 8px; }
     .input-group .field-hint { font-size: 0.78rem; color: #999; margin-top: 6px; }
+    .input-group input[type="text"] {
+        width: 100%; padding: 12px 14px; border: 2px solid #eee; border-radius: 12px;
+        font-size: 0.95rem; outline: none; transition: 0.2s; background: #f9f9f9; color: #1a1a1a;
+        font-family: 'Daeojamjil', sans-serif;
+    }
+    .input-group input[type="text"]:focus { border-color: #5865F2; background: #fff; }
+    .input-group input[type="text"].invalid { border-color: #e0303f; background: #fff6f6; }
 
     /* 커스텀 서버 선택 드롭다운 */
     .guild-dropdown { position: relative; }
@@ -385,6 +392,12 @@
                         </div>
                     </div>
                     <div class="field-hint">본인이 오너이거나 관리자 권한을 가진 서버만 표시됩니다. 발급 여부는 위에서 고른 관리 서버 기준입니다.</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="serverLinkInput">서버 초대 링크</label>
+                    <input type="text" id="serverLinkInput" placeholder="https://discord.gg/..." autocomplete="off" required>
+                    <div class="field-hint">https://discord.gg/... 또는 https://discord.com/invite/... 형식의 초대 링크를 입력해주세요. 리뷰어가 서버를 미리 확인하는 데 사용됩니다.</div>
                 </div>
 
                 <div id="formBanner" class="form-banner"></div>
@@ -912,17 +925,34 @@
         banner.textContent = '';
     }
 
+    var SERVER_LINK_PATTERN = /^https:\/\/(discord\.gg\/|discord\.com\/invite\/)\S+$/i;
+
     async function submitApplication(evt) {
         evt.preventDefault();
         hideFormBanner();
 
         var managementGuildId = document.getElementById('managementGuildSelect').value;
         var subjectGuildId = document.getElementById('subjectGuildSelect').value;
+        var serverLinkInput = document.getElementById('serverLinkInput');
+        var serverLink = serverLinkInput.value.trim();
 
         if (!managementGuildId || !subjectGuildId) {
             showFormBanner('error', '관리 서버와 허가증을 받을 서버를 모두 선택해주세요.');
             return;
         }
+        if (!serverLink) {
+            serverLinkInput.classList.add('invalid');
+            serverLinkInput.focus();
+            showFormBanner('error', '서버 초대 링크를 입력해주세요. 필수 입력 항목입니다.');
+            return;
+        }
+        if (!SERVER_LINK_PATTERN.test(serverLink)) {
+            serverLinkInput.classList.add('invalid');
+            serverLinkInput.focus();
+            showFormBanner('error', '서버 링크는 https://discord.gg/... 또는 https://discord.com/invite/... 형식이어야 합니다.');
+            return;
+        }
+        serverLinkInput.classList.remove('invalid');
 
         var submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
@@ -932,9 +962,10 @@
         try {
             var data = await apiFetch('/applications', {
                 method: 'POST',
-                body: JSON.stringify({ management_guild_id: managementGuildId, subject_guild_id: subjectGuildId })
+                body: JSON.stringify({ management_guild_id: managementGuildId, subject_guild_id: subjectGuildId, server_link: serverLink })
             });
             showFormBanner('success', '신청이 접수되었습니다. (신청 번호 #' + data.application_id + ') 관리 서버의 검토를 기다려주세요.');
+            serverLinkInput.value = '';
             // 관리 서버 선택은 유지 (같은 관리 서버로 다른 서버를 이어서 신청하는 경우가 많음)
             resetGuildSelection('subject');
             await loadEligibleGuilds(managementGuildId);
@@ -1000,6 +1031,9 @@
         if (window.lucide) window.lucide.createIcons();
 
         document.getElementById('applyForm').addEventListener('submit', submitApplication);
+        document.getElementById('serverLinkInput').addEventListener('input', function () {
+            this.classList.remove('invalid');
+        });
 
         document.addEventListener('click', function (e) {
             var dropdown = document.getElementById('userDropdown');
