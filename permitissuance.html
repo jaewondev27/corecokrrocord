@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rocord - 사용허가증 발급</title>
+<meta name="theme-color" content="#5865F2">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Rocord - 사용허가증 발급">
+<meta property="og:description" content="Discord 로그인 후 본인 서버의 사용허가증 발급을 신청하세요.">
+<meta property="og:image" content="https://rocord.corerepublix.co.kr/banner.png">
+<meta property="og:url" content="https://rocord.corerepublix.co.kr/permitissuance">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Rocord - 사용허가증 발급">
+<meta name="twitter:description" content="Discord 로그인 후 본인 서버의 사용허가증 발급을 신청하세요.">
+<meta name="twitter:image" content="https://rocord.corerepublix.co.kr/banner.png">
+<meta name="robots" content="noindex">
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+    @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+    @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil5Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+    @font-face { font-family: 'Daeojamjil'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil6ExtraBold.woff2') format('woff2'); font-weight: 800; font-display: swap; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Daeojamjil', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #ffffff; color: #1a1a1a; padding-top: 60px; line-height: 1.6; word-break: keep-all; }
+    a { text-decoration: none; color: inherit; }
+    button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+    /* 헤더 (사이트 공통 스타일) */
+    header { position: fixed; top: 0; width: 100%; height: 60px; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; backdrop-filter: blur(15px); background: rgba(255, 255, 255, 0.85); border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .logo-container svg { height: 24px; width: auto; display: block; cursor: pointer; }
+    .header-right { display: flex; align-items: center; gap: 20px; }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-links a { font-size: 0.95rem; font-weight: 500; transition: color 0.3s; }
+    .nav-links a:hover { color: #5865F2; }
+
+    .login-trigger-btn { background: #1a1a1a; color: #fff; padding: 8px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; transition: 0.3s; display: flex; align-items: center; gap: 8px; max-width: 170px; }
+    .login-trigger-btn:hover { background: #333; transform: translateY(-2px); }
+    .profile-name { display: inline-block; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+    .user-avatar { width: 24px; height: 24px; border-radius: 50%; display: none; }
+    .btn-inner-spinner { width: 14px; height: 14px; border: 2px solid transparent; border-top: 2px solid #fff; border-right: 2px solid #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+    .hamburger-btn { display: none; width: 24px; height: 24px; position: relative; z-index: 1100; }
+    .hamburger-btn span { display: block; width: 100%; height: 2px; background: #1a1a1a; position: absolute; left: 0; transition: 0.3s; }
+    .hamburger-btn span:nth-child(1) { top: 4px; }
+    .hamburger-btn span:nth-child(2) { top: 11px; }
+    .hamburger-btn span:nth-child(3) { top: 18px; }
+    .hamburger-btn.active span:nth-child(1) { top: 11px; transform: rotate(45deg); }
+    .hamburger-btn.active span:nth-child(2) { opacity: 0; }
+    .hamburger-btn.active span:nth-child(3) { top: 11px; transform: rotate(-45deg); }
+    .mobile-menu { position: fixed; top: 60px; left: 0; width: 100%; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 15px; transform: translateY(-150%); transition: transform 0.3s ease-in-out; z-index: 999; }
+    .mobile-menu.active { transform: translateY(0); }
+    .mobile-menu a { font-size: 1.1rem; font-weight: 700; width: 100%; text-align: center; padding: 10px 0; }
+
+    .user-dropdown { position: fixed; top: 60px; right: 40px; width: 300px; background: #fff; border-radius: 18px; box-shadow: 0 16px 48px rgba(0,0,0,0.2); padding: 0; display: none; flex-direction: column; border: 1px solid #eee; z-index: 1002; overflow: hidden; }
+    .user-dropdown.active { display: flex; }
+    .dropdown-banner { height: 56px; background: linear-gradient(135deg, #5865F2, #7289da); }
+    .dropdown-profile-header { display: flex; align-items: flex-end; gap: 14px; padding: 0 20px 16px; margin-top: -28px; border-bottom: 1px solid #eee; }
+    .dropdown-avatar-large { width: 64px; height: 64px; border-radius: 50%; background: #eee; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0; }
+    .dropdown-text-info { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 4px; }
+    .dropdown-name { font-weight: 800; font-size: 1.05rem; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dropdown-id { font-size: 0.8rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dropdown-actions { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px 20px; }
+    .logout-btn { width: 100%; padding: 10px; background: #ff4757; color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .logout-btn:hover { background: #e84118; }
+
+    .btn-discord-login { width: 100%; padding: 14px; background: #5865F2; color: #fff; border-radius: 12px; font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+    .btn-discord-login:hover { background: #4752c4; transform: translateY(-2px); }
+    .btn-discord-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .lucide-fill { width: 16px; height: 16px; fill: currentColor; vertical-align: -3px; margin-right: 4px; }
+
+    /* 컨텐츠 */
+    .content-container { max-width: 780px; margin: 0 auto; padding: 40px 20px 100px; min-height: 80vh; }
+    .page-header { margin-bottom: 8px; }
+    .page-title { font-size: 2rem; font-weight: 800; color: #1a1a1a; }
+    .page-desc { color: #777; font-size: 0.95rem; margin-top: 8px; margin-bottom: 32px; }
+
+    .permit-card { background: #fff; border: 1px solid #eee; border-radius: 20px; padding: 28px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 24px; }
+    .permit-card h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 18px; }
+
+    .gate-card { text-align: center; padding: 50px 30px; }
+    .gate-icon { width: 56px; height: 56px; border-radius: 50%; background: #eef0ff; color: #5865F2; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .gate-icon svg { width: 28px; height: 28px; }
+    .gate-card h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; }
+    .gate-card p { color: #777; font-size: 0.9rem; margin-bottom: 26px; max-width: 380px; margin-left: auto; margin-right: auto; }
+    .gate-card .btn-discord-login { max-width: 280px; margin: 0 auto; }
+
+    .profile-strip { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: #f8f9fa; border: 1px solid #eee; border-radius: 14px; margin-bottom: 24px; }
+    .profile-strip img { width: 36px; height: 36px; border-radius: 50%; background: #eee; object-fit: cover; }
+    .profile-strip .strip-info { flex-grow: 1; min-width: 0; }
+    .profile-strip .strip-name { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .profile-strip .strip-id { font-size: 0.75rem; color: #999; }
+    .profile-strip .strip-logout { padding: 8px 14px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: #555; transition: 0.2s; }
+    .profile-strip .strip-logout:hover { border-color: #ff4757; color: #ff4757; }
+
+    .input-group { margin-bottom: 18px; }
+    .input-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #555; margin-bottom: 8px; }
+    .input-group select {
+        width: 100%; padding: 13px 15px; border: 2px solid #eee; border-radius: 12px;
+        font-size: 0.95rem; outline: none; transition: 0.3s; background: #f9f9f9; color: #1a1a1a;
+        appearance: none; -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat; background-position: right 15px center; background-size: 15px; padding-right: 40px;
+        font-family: 'Daeojamjil', sans-serif;
+    }
+    .input-group select:focus { border-color: #5865F2; background-color: #fff; }
+    .input-group .field-hint { font-size: 0.78rem; color: #999; margin-top: 6px; }
+
+    .form-banner { padding: 12px 16px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; margin-bottom: 18px; display: none; }
+    .form-banner.error { display: block; background: #fff0f0; color: #d63447; border: 1px solid #ffd6d6; }
+    .form-banner.success { display: block; background: #eefaf0; color: #1a9c50; border: 1px solid #c9f0d4; }
+
+    .btn-submit-apply { width: 100%; padding: 14px; background: #1a1a1a; color: #fff; border-radius: 12px; font-weight: 700; font-size: 1rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-submit-apply:hover:not(:disabled) { background: #333; }
+    .btn-submit-apply:disabled { background: #ccc; cursor: not-allowed; }
+
+    .refresh-btn { width: 34px; height: 34px; border-radius: 10px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; color: #555; transition: 0.2s; }
+    .refresh-btn:hover { background: #eee; color: #5865F2; }
+    .refresh-btn svg { width: 16px; height: 16px; }
+    .refresh-btn.spinning svg { animation: spin 0.7s linear infinite; }
+
+    .applications-list { display: flex; flex-direction: column; gap: 12px; }
+    .app-empty, .app-loading { text-align: center; color: #999; font-size: 0.88rem; padding: 30px 10px; }
+    .app-item { border: 1px solid #eee; border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .app-item .app-main { flex: 1; min-width: 160px; }
+    .app-item .app-server-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .app-item .app-meta { font-size: 0.78rem; color: #999; }
+    .app-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+    .badge-role-owner { background: #fff4dd; color: #b8860b; }
+    .badge-role-admin { background: #eaf1ff; color: #3b6fd6; }
+    .badge-role-legacy { background: #f2f2f2; color: #888; }
+    .badge-status-pending { background: #fff8e6; color: #c98a00; }
+    .badge-status-approved { background: #eafaf0; color: #1a9c50; }
+    .badge-status-denied { background: #fdecec; color: #e0303f; }
+    .already-certified-tag { font-size: 0.7rem; color: #e0303f; font-weight: 700; margin-left: 6px; }
+
+    .spinner { width: 34px; height: 34px; border: 4px solid transparent; border-top: 4px solid #5865F2; border-right: 4px solid #5865F2; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+        header { height: 55px; padding: 0 20px; }
+        .nav-links { display: none; }
+        .logo-container svg { height: 20px; }
+        .hamburger-btn { display: block; }
+        .mobile-menu { top: 55px; }
+        .user-dropdown { right: 12px; width: min(300px, calc(100vw - 24px)); }
+        .content-container { padding: 30px 16px 80px; }
+        .page-title { font-size: 1.6rem; }
+        .app-item { flex-direction: column; align-items: flex-start; }
+    }
+
+    footer.cx-footer { padding: 2.5rem 1.5rem 4rem; background: #fff; border-top: 1px solid rgba(0, 0, 0, 0.08); font-family: "Google Sans Flex", -apple-system, "Noto Sans KR", sans-serif; text-align: left; }
+    .cx-footer__inner { max-width: 72rem; margin: 0 auto; }
+    .cx-footer__logo { height: 2rem; width: auto; display: block; margin-bottom: 1rem; }
+    .cx-footer__brand { font-weight: 700; font-size: 1rem; margin: 0; color: #111827; }
+    .cx-footer__copy { font-size: 0.875rem; color: #666666; margin-top: 0.2rem; }
+    .cx-footer__bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+    .cx-footer__fine { margin: 0; font-size: 0.8125rem; color: #666666; }
+    .cx-footer__cf { display: flex; width: fit-content; margin-left: auto; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 500; color: #666666; text-decoration: none; transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .cx-footer__cf:hover { color: #000000; }
+    .cx-footer__cf-logo { width: 1.25rem; height: 1.25rem; flex-shrink: 0; display: block; }
+    @media (max-width: 640px) { .cx-footer__bottom { flex-direction: column; align-items: flex-start; } }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo-container" onclick="location.href='index.html'">
+        <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 454.000000 95.000000" preserveAspectRatio="xMidYMid meet">
+            <g transform="translate(0.000000,95.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                <path d="M110 725 l0 -75 254 0 254 0 43 -45 c24 -25 48 -45 54 -45 6 0 34 24 63 53 l52 53 -68 67 -68 67 -292 0 -292 0 0 -75z"/>
+                <path d="M940 513 l1 -178 82 -92 81 -93 218 0 218 0 0 264 c0 231 -2 265 -16 270 -9 3 -144 6 -300 6 l-284 0 0 -177z m430 -88 l0 -175 -74 0 -73 0 -57 67 -56 67 0 102 c0 55 3 104 7 107 3 4 62 7 130 7 l123 0 0 -175z"/>
+                <path d="M2350 516 l0 -175 83 -95 82 -94 218 -1 217 -1 -2 268 -3 267 -297 3 -298 2 0 -174z m438 -93 l2 -173 -77 0 -78 0 -57 71 -58 71 0 97 c0 54 3 101 7 105 4 3 63 5 132 4 l126 -3 3 -172z"/>
+                <path d="M1640 410 l0 -270 263 0 263 0 43 44 c41 42 42 43 19 50 -13 3 -110 6 -215 6 l-193 0 0 175 0 175 178 0 178 0 25 28 c62 68 85 62 -255 62 l-306 0 0 -270z"/>
+                <path d="M3080 615 l0 -65 213 0 213 0 34 -35 c19 -19 39 -35 45 -35 6 0 29 18 50 40 l39 40 -59 60 -59 60 -238 0 -238 0 0 -65z"/>
+                <path d="M3780 410 l0 -270 224 0 224 0 70 113 c109 174 108 145 15 294 l-80 128 -226 3 -227 2 0 -270z m382 93 c62 -99 63 -84 -9 -194 l-44 -69 -79 0 -80 0 0 175 0 175 78 0 79 0 55 -87z"/>
+                <path d="M510 295 l135 -135 110 0 110 0 -135 135 -135 135 -110 0 -110 0 135 -135z"/>
+                <path d="M3355 318 c28 -29 75 -79 105 -111 l54 -57 96 0 95 0 -110 110 -110 110 -89 0 -90 0 49 -52z"/>
+                <path d="M110 255 l0 -95 95 0 95 0 0 95 0 95 -95 0 -95 0 0 -95z"/>
+                <path d="M3080 230 l0 -80 80 0 81 0 -3 78 -3 77 -77 3 -78 3 0 -81z"/>
+            </g>
+        </svg>
+    </div>
+    <div class="header-right">
+        <nav class="nav-links">
+            <a href="model.html">모델</a>
+            <a href="system.html">시스템</a>
+            <a href="car.html">차량</a>
+            <a href="shirt.html">복장</a>
+        </nav>
+
+        <button id="headerLoginBtn" class="login-trigger-btn" onclick="onHeaderBtnClick()">
+            <img id="userAvatar" class="user-avatar" src="" alt="">
+            <span id="loginBtnText" class="profile-name">로그인</span>
+        </button>
+
+        <button class="hamburger-btn" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="model.html">모델</a>
+    <a href="system.html">시스템</a>
+    <a href="car.html">차량</a>
+    <a href="shirt.html">복장</a>
+</div>
+
+<div class="user-dropdown" id="userDropdown">
+    <div class="dropdown-banner"></div>
+    <div class="dropdown-profile-header">
+        <img id="dropdownAvatar" class="dropdown-avatar-large" src="" alt="Profile">
+        <div class="dropdown-text-info">
+            <div id="dropdownName" class="dropdown-name">사용자</div>
+            <div id="dropdownId" class="dropdown-id">@username</div>
+        </div>
+    </div>
+    <div class="dropdown-actions">
+        <button class="logout-btn" onclick="logoutKukomi()"><i data-lucide="log-out" class="lucide-fill"></i>로그아웃</button>
+    </div>
+</div>
+
+<div class="content-container">
+    <div class="page-header">
+        <h1 class="page-title">사용허가증 발급</h1>
+        <p class="page-desc">본인이 오너이거나 관리자 권한을 가진 서버만 사용허가증 발급을 신청할 수 있습니다. 이 페이지의 로그인은 Rocord 사이트 로그인과 별개이며, Discord 계정 인증을 통해 신청 대상 서버 목록을 확인합니다.</p>
+    </div>
+
+    <div id="loginGate" class="permit-card gate-card">
+        <div class="gate-icon"><i data-lucide="shield-check"></i></div>
+        <h2>로그인이 필요합니다</h2>
+        <p id="gateMessage">사용허가증 발급 신청서를 작성하려면 먼저 Discord로 로그인해주세요. 로그인 시 본인이 오너/관리자 권한을 가진 서버 목록만 안전하게 확인됩니다.</p>
+        <button class="btn-discord-login" id="gateLoginBtn" onclick="loginWithDiscordKukomi()">
+            <svg width="20" height="20" viewBox="0 0 127 96" fill="white">
+                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+            </svg>
+            Discord로 로그인
+        </button>
+    </div>
+
+    <div id="appContent" style="display:none;">
+        <div class="profile-strip" id="profileStrip">
+            <img id="stripAvatar" src="" alt="">
+            <div class="strip-info">
+                <div class="strip-name" id="stripName">-</div>
+                <div class="strip-id" id="stripId">-</div>
+            </div>
+            <button class="strip-logout" onclick="logoutKukomi()">로그아웃</button>
+        </div>
+
+        <section class="permit-card">
+            <h3>신청서 작성</h3>
+            <form id="applyForm">
+                <div class="input-group">
+                    <label for="managementGuildSelect">신청서를 받을 관리 서버</label>
+                    <select id="managementGuildSelect" required>
+                        <option value="">불러오는 중...</option>
+                    </select>
+                    <div class="field-hint">허가증 발급 신청을 검토·승인할 관리 서버입니다.</div>
+                </div>
+                <div class="input-group">
+                    <label for="subjectGuildSelect">허가증을 발급받을 서버</label>
+                    <select id="subjectGuildSelect" required>
+                        <option value="">불러오는 중...</option>
+                    </select>
+                    <div class="field-hint">본인이 오너이거나 관리자 권한을 가진 서버만 표시됩니다.</div>
+                </div>
+
+                <div id="formBanner" class="form-banner"></div>
+
+                <button type="submit" class="btn-submit-apply" id="submitBtn">
+                    <i data-lucide="send" class="lucide-fill" style="margin-right:2px;"></i>
+                    신청서 제출하기
+                </button>
+            </form>
+        </section>
+
+        <section class="permit-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+                <h3 style="margin-bottom:0;">내 신청 내역</h3>
+                <button class="refresh-btn" id="refreshAppsBtn" onclick="loadMyApplications()" title="새로고침">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><polyline points="21 3 21 9 15 9"></polyline></svg>
+                </button>
+            </div>
+            <div id="applicationsList" class="applications-list">
+                <div class="app-loading">불러오는 중...</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<footer class="cx-footer">
+    <div class="cx-footer__inner">
+        <div class="cx-footer__meta">
+            <img class="cx-footer__logo" src="/logo-color.png" alt="CorerepubliX">
+            <p class="cx-footer__brand">CorerepubliX</p>
+            <p class="cx-footer__copy">© 2026 CorerepubliX. All rights reserved. CPU 사용을 즐겁게 — 소프트웨어로.</p>
+        </div>
+        <div class="cx-footer__bottom">
+            <p class="cx-footer__fine">대표자: sj_w0n_</p>
+            <a class="cx-footer__cf" href="https://www.cloudflare.com/" target="_blank" rel="noopener noreferrer">
+                <img class="cx-footer__cf-logo" src="/cloudflare.svg" alt="Cloudflare" width="20" height="20">
+                <span>Security by Cloudflare</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script>
+(function () {
+    // PUBLIC_API.md 문서 기준 - Rocord 사이트의 일반 로그인(discord_session)과는
+    // 완전히 별개인 허가증 발급 전용 세션. 토큰은 kukomi_session_token 키로 저장한다.
+    var API = 'https://api.corerepublix.co.kr/api/kukomi';
+    var TOKEN_KEY = 'kukomi_session_token';
+
+    var state = {
+        token: null,
+        me: null,
+        managementGuilds: [],
+        eligibleGuilds: []
+    };
+
+    function getToken() { return localStorage.getItem(TOKEN_KEY); }
+    function setToken(t) { localStorage.setItem(TOKEN_KEY, t); state.token = t; }
+    function clearToken() { localStorage.removeItem(TOKEN_KEY); state.token = null; }
+
+    function safeUrl(u) {
+        if (!u) return null;
+        try {
+            var resolved = new URL(u, window.location.href);
+            if (resolved.protocol === 'https:' || resolved.protocol === 'http:') return resolved.href;
+        } catch (e) {}
+        return null;
+    }
+
+    function clearChildren(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+    function el(tag, className, text) {
+        var e = document.createElement(tag);
+        if (className) e.className = className;
+        if (text !== undefined && text !== null) e.textContent = text;
+        return e;
+    }
+
+    async function apiFetch(path, options) {
+        options = options || {};
+        var headers = Object.assign({}, options.headers || {});
+        if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+        if (options.body) headers['Content-Type'] = 'application/json';
+
+        var res;
+        try {
+            res = await fetch(API + path, Object.assign({}, options, { headers: headers }));
+        } catch (e) {
+            throw { networkError: true };
+        }
+
+        var data = null;
+        try { data = await res.json(); } catch (e) { data = null; }
+
+        if (res.status === 401) {
+            clearToken();
+            showLoginGate('세션이 만료되었습니다. 다시 로그인해주세요.');
+            throw { status: 401, data: data };
+        }
+        if (!res.ok) {
+            throw { status: res.status, data: data };
+        }
+        return data;
+    }
+
+    function loginWithDiscordKukomi() {
+        window.location.href = API + '/oauth/discord/authorize';
+    }
+    window.loginWithDiscordKukomi = loginWithDiscordKukomi;
+
+    function onHeaderBtnClick() {
+        if (state.me) {
+            document.getElementById('userDropdown').classList.toggle('active');
+        } else {
+            loginWithDiscordKukomi();
+        }
+    }
+    window.onHeaderBtnClick = onHeaderBtnClick;
+
+    async function logoutKukomi() {
+        var t = state.token;
+        clearToken();
+        if (t) {
+            try {
+                await fetch(API + '/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + t } });
+            } catch (e) { /* 세션 폐기 실패해도 로컬 로그아웃은 진행 */ }
+        }
+        document.getElementById('userDropdown').classList.remove('active');
+        location.reload();
+    }
+    window.logoutKukomi = logoutKukomi;
+
+    function showLoginGate(message) {
+        document.getElementById('loginGate').style.display = 'block';
+        document.getElementById('appContent').style.display = 'none';
+        if (message) document.getElementById('gateMessage').textContent = message;
+
+        document.getElementById('loginBtnText').textContent = '로그인';
+        document.getElementById('userAvatar').style.display = 'none';
+        document.getElementById('userDropdown').classList.remove('active');
+    }
+
+    function renderProfile(me) {
+        state.me = me;
+        var avatarUrl = safeUrl(me.avatar_url) || 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+        document.getElementById('loginGate').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+
+        document.getElementById('loginBtnText').textContent = me.username || '사용자';
+        var headerAvatar = document.getElementById('userAvatar');
+        headerAvatar.src = avatarUrl;
+        headerAvatar.style.display = 'inline-block';
+
+        document.getElementById('dropdownAvatar').src = avatarUrl;
+        document.getElementById('dropdownName').textContent = me.username || '사용자';
+        document.getElementById('dropdownId').textContent = me.id || '';
+
+        document.getElementById('stripAvatar').src = avatarUrl;
+        document.getElementById('stripName').textContent = me.username || '사용자';
+        document.getElementById('stripId').textContent = me.id || '';
+
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    function guildOptionLabel(g) {
+        var label = g.name;
+        if (g.role === 'owner') label += ' (👑 오너)';
+        else if (g.role === 'admin') label += ' (🛡️ 관리자)';
+        if (g.already_certified) label += ' - 이미 발급됨';
+        return label;
+    }
+
+    function populateManagementGuilds(guilds) {
+        state.managementGuilds = guilds || [];
+        var select = document.getElementById('managementGuildSelect');
+        clearChildren(select);
+
+        if (!guilds || guilds.length === 0) {
+            select.appendChild(el('option', null, '신청 가능한 관리 서버가 없습니다'));
+            select.disabled = true;
+            return;
+        }
+        select.disabled = false;
+        select.appendChild(el('option', null, '서버를 선택하세요'));
+        select.firstChild.value = '';
+        guilds.forEach(function (g) {
+            var opt = el('option', null, g.name);
+            opt.value = g.id;
+            select.appendChild(opt);
+        });
+    }
+
+    function populateEligibleGuilds(guilds) {
+        state.eligibleGuilds = guilds || [];
+        var select = document.getElementById('subjectGuildSelect');
+        clearChildren(select);
+
+        if (!guilds || guilds.length === 0) {
+            select.appendChild(el('option', null, '오너/관리자 권한을 가진 서버가 없습니다'));
+            select.disabled = true;
+            return;
+        }
+        select.disabled = false;
+        var placeholder = el('option', null, '서버를 선택하세요');
+        placeholder.value = '';
+        select.appendChild(placeholder);
+
+        guilds.forEach(function (g) {
+            var opt = el('option', null, guildOptionLabel(g));
+            opt.value = g.id;
+            if (g.already_certified) opt.disabled = true;
+            select.appendChild(opt);
+        });
+    }
+
+    async function loadManagementGuilds() {
+        try {
+            var data = await apiFetch('/management-guilds');
+            populateManagementGuilds(data.guilds);
+        } catch (e) {
+            var select = document.getElementById('managementGuildSelect');
+            clearChildren(select);
+            select.appendChild(el('option', null, '불러오기 실패 - 새로고침해주세요'));
+            select.disabled = true;
+        }
+    }
+
+    async function loadEligibleGuilds() {
+        try {
+            var data = await apiFetch('/my-eligible-guilds');
+            populateEligibleGuilds(data.guilds);
+        } catch (e) {
+            if (e && e.status === 401) return;
+            var select = document.getElementById('subjectGuildSelect');
+            clearChildren(select);
+            select.appendChild(el('option', null, '불러오기 실패 - 새로고침해주세요'));
+            select.disabled = true;
+        }
+    }
+
+    function statusBadge(status) {
+        var map = {
+            pending: ['badge-status-pending', '⏳ 대기중'],
+            approved: ['badge-status-approved', '✅ 승인'],
+            denied: ['badge-status-denied', '❌ 거부']
+        };
+        var info = map[status] || ['badge', status];
+        return el('span', 'badge ' + info[0], info[1]);
+    }
+
+    function roleBadge(role) {
+        if (role === 'owner') return el('span', 'badge badge-role-owner', '👑 오너');
+        if (role === 'admin') return el('span', 'badge badge-role-admin', '🛡️ 관리자');
+        return el('span', 'badge badge-role-legacy', '확인 불가');
+    }
+
+    function managementGuildName(id) {
+        var found = state.managementGuilds.find(function (g) { return g.id === id; });
+        return found ? found.name : id;
+    }
+
+    function formatDate(iso) {
+        try {
+            return new Date(iso).toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch (e) { return iso; }
+    }
+
+    function renderApplications(applications) {
+        var list = document.getElementById('applicationsList');
+        clearChildren(list);
+
+        if (!applications || applications.length === 0) {
+            list.appendChild(el('div', 'app-empty', '아직 제출한 신청 내역이 없습니다.'));
+            return;
+        }
+
+        applications.forEach(function (app) {
+            var item = el('div', 'app-item');
+
+            var main = el('div', 'app-main');
+            main.appendChild(el('div', 'app-server-name', app.server_name || app.server_id));
+            main.appendChild(el('div', 'app-meta', managementGuildName(app.management_guild_id) + ' · ' + formatDate(app.created_at)));
+            item.appendChild(main);
+
+            var badges = el('div', 'app-badges');
+            badges.appendChild(roleBadge(app.applicant_role));
+            badges.appendChild(statusBadge(app.status));
+            item.appendChild(badges);
+
+            list.appendChild(item);
+        });
+    }
+
+    async function loadMyApplications() {
+        var btn = document.getElementById('refreshAppsBtn');
+        btn.classList.add('spinning');
+        try {
+            var data = await apiFetch('/applications/mine');
+            renderApplications(data.applications);
+        } catch (e) {
+            if (e && e.status === 401) return;
+            var list = document.getElementById('applicationsList');
+            clearChildren(list);
+            list.appendChild(el('div', 'app-empty', '신청 내역을 불러오지 못했습니다.'));
+        } finally {
+            btn.classList.remove('spinning');
+        }
+    }
+    window.loadMyApplications = loadMyApplications;
+
+    function showFormBanner(type, message) {
+        var banner = document.getElementById('formBanner');
+        banner.className = 'form-banner ' + type;
+        banner.textContent = message;
+    }
+
+    function hideFormBanner() {
+        var banner = document.getElementById('formBanner');
+        banner.className = 'form-banner';
+        banner.textContent = '';
+    }
+
+    async function submitApplication(evt) {
+        evt.preventDefault();
+        hideFormBanner();
+
+        var managementGuildId = document.getElementById('managementGuildSelect').value;
+        var subjectGuildId = document.getElementById('subjectGuildSelect').value;
+
+        if (!managementGuildId || !subjectGuildId) {
+            showFormBanner('error', '관리 서버와 허가증을 받을 서버를 모두 선택해주세요.');
+            return;
+        }
+
+        var submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        var originalHtml = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="btn-inner-spinner"></span>';
+
+        try {
+            var data = await apiFetch('/applications', {
+                method: 'POST',
+                body: JSON.stringify({ management_guild_id: managementGuildId, subject_guild_id: subjectGuildId })
+            });
+            showFormBanner('success', '신청이 접수되었습니다. (신청 번호 #' + data.application_id + ') 관리 서버의 검토를 기다려주세요.');
+            document.getElementById('applyForm').reset();
+            await Promise.all([loadEligibleGuilds(), loadMyApplications()]);
+        } catch (e) {
+            if (e && e.status === 401) {
+                // showLoginGate already handled by apiFetch
+            } else if (e && e.data && e.data.error) {
+                showFormBanner('error', e.data.error);
+            } else if (e && e.networkError) {
+                showFormBanner('error', '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+            } else {
+                showFormBanner('error', '신청 처리 중 오류가 발생했습니다.');
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+            if (window.lucide) window.lucide.createIcons();
+        }
+    }
+
+    async function bootstrapLoggedIn() {
+        try {
+            var me = await apiFetch('/me');
+            renderProfile(me);
+            await Promise.all([loadEligibleGuilds(), loadMyApplications()]);
+        } catch (e) {
+            // 401은 apiFetch가 이미 showLoginGate 처리함
+        }
+    }
+
+    function consumeHashToken() {
+        if (!window.location.hash) return false;
+        var params = new URLSearchParams(window.location.hash.slice(1));
+        var token = params.get('token');
+        var error = params.get('error');
+
+        if (token) {
+            setToken(token);
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+            return true;
+        }
+        if (error) {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+            showLoginGate('로그인에 실패했습니다 (' + error + '). 다시 시도해주세요.');
+        }
+        return false;
+    }
+
+    function toggleMobileMenu() {
+        document.querySelector('.hamburger-btn').classList.toggle('active');
+        document.getElementById('mobileMenu').classList.toggle('active');
+    }
+    window.toggleMobileMenu = toggleMobileMenu;
+
+    window.addEventListener('DOMContentLoaded', function () {
+        if (window.lucide) window.lucide.createIcons();
+
+        document.getElementById('applyForm').addEventListener('submit', submitApplication);
+
+        document.addEventListener('click', function (e) {
+            var dropdown = document.getElementById('userDropdown');
+            var headerBtn = document.getElementById('headerLoginBtn');
+            var hamburger = document.querySelector('.hamburger-btn');
+            var mobileMenu = document.getElementById('mobileMenu');
+            if (!dropdown.contains(e.target) && !headerBtn.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+            if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        loadManagementGuilds();
+
+        var hadHashToken = consumeHashToken();
+        state.token = getToken();
+
+        if (state.token) {
+            bootstrapLoggedIn();
+        } else {
+            showLoginGate();
+        }
+    });
+})();
+</script>
+
+</body>
+</html>
