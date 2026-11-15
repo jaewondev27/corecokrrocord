@@ -1,0 +1,219 @@
+/* Roblox-style skin for the Rocord site.
+   Layout and structure are untouched: this file only restyles buttons, cards,
+   modals, inputs and chips. Load it LAST in <head> so it overrides the inline
+   page styles. */
+
+:root {
+    --rb-blue: #335fff;
+    --rb-blue-hover: #2a50d9;
+    --rb-blue-soft: #e8eeff;
+    --rb-ink: #393b3d;
+    --rb-ink-strong: #191919;
+    --rb-muted: #6d7075;
+    --rb-faint: #8d9096;
+    --rb-surface: #ffffff;
+    --rb-bg: #f2f4f5;
+    --rb-btn-2: #e3e6ea;
+    --rb-btn-2-hover: #d5d9de;
+    --rb-line: #e3e6ea;
+    --rb-red: #e2462f;
+    --rb-r-sm: 8px;
+    --rb-r-md: 12px;
+}
+
+body { color: var(--rb-ink); }
+
+/* ---------- Header ---------- */
+header {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-bottom: 1px solid var(--rb-line) !important;
+    box-shadow: none !important;
+}
+.nav-links a { font-weight: 700; color: var(--rb-ink); border-radius: var(--rb-r-sm); padding: 6px 10px; }
+.nav-links a:hover { color: var(--rb-ink-strong); background: var(--rb-bg); }
+.nav-links a[style*="5865F2"] { color: var(--rb-blue) !important; }
+.mobile-menu { border-radius: 0 0 var(--rb-r-md) var(--rb-r-md); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+.mobile-menu a { border-radius: var(--rb-r-sm); }
+.mobile-menu a:hover { background: var(--rb-bg); }
+
+/* Login button = Roblox primary */
+.login-trigger-btn {
+    background: var(--rb-blue); color: #fff; border-radius: var(--rb-r-sm);
+    padding: 8px 18px; font-weight: 700;
+}
+.login-trigger-btn:hover { background: var(--rb-blue-hover); transform: none; }
+.user-avatar { border-radius: 50%; }
+
+/* ---------- Search ---------- */
+.search-input, .search-box input {
+    background: #eceef0; border: 1px solid transparent; border-radius: var(--rb-r-sm);
+    color: var(--rb-ink-strong);
+}
+.search-input:focus, .search-box input:focus,
+.search-container.active .search-input {
+    background: #fff; border-color: var(--rb-blue); box-shadow: none;
+}
+.sort-select {
+    background-color: #eceef0; border: 1px solid transparent; border-radius: var(--rb-r-sm);
+    color: var(--rb-ink);
+}
+.sort-select:focus { border-color: var(--rb-blue); background-color: #fff; }
+.search-results-dropdown {
+    border-radius: var(--rb-r-md); border: 1px solid var(--rb-line);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+}
+.search-result-card { background: transparent; border-radius: var(--rb-r-sm); }
+.search-result-card:hover { background: var(--rb-bg); }
+.search-card-img { border-radius: var(--rb-r-sm); }
+.search-card-btn { background: var(--rb-blue); border-radius: var(--rb-r-sm); }
+.search-card-btn:hover { background: var(--rb-blue-hover); }
+
+/* ---------- Dropdown (profile) ---------- */
+.user-dropdown {
+    border-radius: var(--rb-r-md); border: 1px solid var(--rb-line);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+}
+.dropdown-banner { background: var(--rb-bg); border-bottom: none; }
+.dropdown-avatar-large { box-shadow: none; background: var(--rb-bg); }
+.dropdown-detail-list, .dropdown-profile-header { border-bottom-color: var(--rb-line); }
+.dropdown-detail-row .detail-label { color: var(--rb-muted); }
+.dropdown-detail-row .detail-value span { color: var(--rb-blue); }
+.cart-btn { background: var(--rb-btn-2); color: var(--rb-ink-strong); border-radius: var(--rb-r-sm); }
+.cart-btn:hover { background: var(--rb-btn-2-hover); }
+.logout-btn { background: var(--rb-btn-2); color: var(--rb-red); border-radius: var(--rb-r-sm); }
+.logout-btn:hover { background: var(--rb-btn-2-hover); }
+.cart-badge { background: var(--rb-blue); }
+
+/* ---------- Modals ---------- */
+.modal-overlay { background: rgba(0, 0, 0, 0.6); }
+.login-modal, .cart-modal {
+    border-radius: var(--rb-r-md); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+.modal-title { font-size: 1.3rem; font-weight: 800; color: var(--rb-ink-strong); }
+.modal-close { color: var(--rb-muted); }
+.modal-close:hover { color: var(--rb-ink-strong); }
+.input-group input {
+    background: #fff; border: 1px solid #c3c7cc; border-radius: var(--rb-r-sm);
+}
+.input-group input:focus { border-color: var(--rb-blue); background: #fff; }
+.btn-login-submit {
+    background: var(--rb-blue); color: #fff; border-radius: var(--rb-r-sm);
+}
+.btn-login-submit:hover { background: var(--rb-blue-hover); }
+.btn-discord-modal { border-radius: var(--rb-r-sm); }
+.checkbox-icon { border: 2px solid #c3c7cc; border-radius: 4px; }
+.auto-login-wrapper input[type="checkbox"]:checked + .checkbox-icon {
+    background: var(--rb-blue); border-color: var(--rb-blue);
+}
+.cart-item { border: 1px solid var(--rb-line); border-radius: var(--rb-r-sm); }
+.cart-item-img { border-radius: 6px; }
+.cart-item-download, .cart-item-remove { background: var(--rb-btn-2); border-radius: var(--rb-r-sm); color: var(--rb-ink); }
+.cart-item-download:hover { background: var(--rb-blue-soft); color: var(--rb-blue); }
+.cart-zip-btn { background: var(--rb-blue); border-radius: var(--rb-r-sm); }
+.cart-zip-btn:hover:not(:disabled) { background: var(--rb-blue-hover); }
+.cart-item-check { accent-color: var(--rb-blue); }
+.cart-toolbar { border-bottom-color: var(--rb-line); }
+
+/* Round "add to cart" chip on cards */
+.cart-add-btn {
+    background: var(--rb-btn-2); border: none; border-radius: var(--rb-r-sm); color: var(--rb-ink);
+}
+.cart-add-btn:hover { background: var(--rb-btn-2-hover); color: var(--rb-ink-strong); }
+.cart-add-btn.in-cart { background: var(--rb-blue); color: #fff; }
+.model-img-wrap .cart-add-btn { background: rgba(255, 255, 255, 0.92); }
+.model-img-wrap .cart-add-btn.in-cart { background: var(--rb-blue); }
+
+/* ---------- Model cards (Roblox game-tile look: flat, image-first) ---------- */
+.model-card {
+    background: transparent; border: none; border-radius: var(--rb-r-md);
+    padding: 0; box-shadow: none; transition: none;
+}
+.model-card:hover { transform: none; box-shadow: none; }
+.model-img { border-radius: var(--rb-r-sm); background: var(--rb-bg); }
+.model-img-wrap { margin-bottom: 8px; }
+.model-info h3 { font-size: 1rem; font-weight: 800; color: var(--rb-ink-strong); margin-bottom: 4px; }
+.model-info p { font-size: 0.85rem; color: var(--rb-muted); margin-bottom: 12px; }
+.model-stats { color: var(--rb-faint) !important; }
+
+.btn-detail {
+    background: var(--rb-btn-2); color: var(--rb-ink-strong); border: none;
+    border-radius: var(--rb-r-sm); font-weight: 700;
+}
+.btn-detail:hover:not(:disabled) { background: var(--rb-btn-2-hover); border: none; }
+.btn-detail:disabled { background: var(--rb-bg); color: #b1b5ba; }
+.btn-download {
+    background: var(--rb-blue); color: #fff; border-radius: var(--rb-r-sm); font-weight: 700;
+}
+.btn-download:hover { background: var(--rb-blue-hover); }
+
+/* ---------- Home sections ---------- */
+.banner-container { border-radius: var(--rb-r-md); background: var(--rb-bg); }
+.slide-nav-btn { background: rgba(0, 0, 0, 0.35); border: none; border-radius: 50%; }
+.slide-nav-btn:hover { background: rgba(0, 0, 0, 0.55); transform: translateY(-50%); }
+
+.recommend-section h3, .system-section h3, .latest-section h3 {
+    border-left: none; padding-left: 0; font-size: 1.35rem; font-weight: 800; color: var(--rb-ink-strong);
+}
+
+.recommend-card { background: var(--rb-bg); border: none; border-radius: var(--rb-r-md); }
+.rec-img-placeholder { background: #fff; }
+.rec-btn { color: var(--rb-blue); }
+
+.system-card, .latest-card {
+    background: transparent; border: none; border-radius: var(--rb-r-md); box-shadow: none;
+}
+.system-card { background: var(--rb-bg); }
+.sys-icon { background: #fff; border-radius: var(--rb-r-sm); }
+.sys-btn { background: var(--rb-blue); border-radius: var(--rb-r-sm); font-weight: 700; }
+.sys-btn:hover { background: var(--rb-blue-hover); }
+.latest-img { border-radius: var(--rb-r-sm); }
+.latest-info { padding: 10px 2px 0; }
+.latest-title { color: var(--rb-ink-strong); font-weight: 800; }
+.latest-btn { background: var(--rb-btn-2); color: var(--rb-ink-strong); border-radius: var(--rb-r-sm); }
+.latest-btn:hover { background: var(--rb-btn-2-hover); }
+
+.contact {
+    background: var(--rb-blue); border-radius: var(--rb-r-md) var(--rb-r-md) 0 0;
+}
+.btn-large { background: #fff; color: var(--rb-blue); border-radius: var(--rb-r-sm); box-shadow: none; }
+footer { background: #232527; }
+
+/* ---------- Detail page / buttons ---------- */
+.detail-hero-img, .detail-main-img, .detail-image-wrapper { border-radius: var(--rb-r-md); }
+.detail-title { color: var(--rb-ink-strong); }
+.detail-content a, .breadcrumb a:hover { color: var(--rb-blue); }
+.detail-content code, .detail-content pre { background: var(--rb-bg); border-radius: var(--rb-r-sm); }
+.detail-content blockquote { border-left-color: var(--rb-blue); }
+.btn-download-lg, .btn-download-detail, .btn-submit, .btn-submit-apply, .btn-review-submit {
+    background: var(--rb-blue); color: #fff; border-radius: var(--rb-r-sm); font-weight: 700;
+}
+.btn-download-lg:hover, .btn-download-detail:hover, .btn-submit:hover,
+.btn-submit-apply:hover, .btn-review-submit:hover { background: var(--rb-blue-hover); }
+.btn-download-lg:disabled { background: var(--rb-btn-2); color: #b1b5ba; }
+.btn-discord-link { background: #5865F2; border-radius: var(--rb-r-sm); font-weight: 700; }
+.btn-more-info, .btn-share, .btn-review-cancel, .review-action-btn, .page-btn, .refresh-btn {
+    background: var(--rb-btn-2); color: var(--rb-ink-strong); border: none; border-radius: var(--rb-r-sm);
+}
+.btn-more-info:hover, .btn-share:hover, .review-action-btn:hover, .page-btn:hover:not(:disabled),
+.refresh-btn:hover { background: var(--rb-btn-2-hover); }
+.page-btn.active { background: var(--rb-blue); color: #fff; }
+
+/* Reviews / admin / permit cards */
+.review-card, .permit-card, .gate-card, .guild-card, .app-item, .dash-card, .tos-container {
+    border-radius: var(--rb-r-md); box-shadow: none;
+}
+.review-textarea { border-radius: var(--rb-r-sm); border: 1px solid #c3c7cc; }
+.review-textarea:focus { border-color: var(--rb-blue); }
+.guild-card.selected { border-color: var(--rb-blue); }
+.badge { border-radius: 6px; }
+.form-banner { border-radius: var(--rb-r-sm); }
+.btn-edit, .btn-del, .btn-text-add, .btn-text-back, .dash-btn {
+    border-radius: var(--rb-r-sm);
+}
+
+/* ---------- Spinners / chat widget ---------- */
+.spinner, .loading-spinner-large {
+    border-top-color: var(--rb-blue); border-right-color: var(--rb-blue);
+}
+#chat-button { border-radius: var(--rb-r-md); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25); }
+#chat-window { border-radius: var(--rb-r-md); }
